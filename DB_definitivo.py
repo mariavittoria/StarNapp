@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 
 conn = sqlite3.connect("Database_proj.db")
 cursor = conn.cursor()
-cursor.execute("DROP TABLE IF EXISTS Patiens_Ok;")
+#cursor.execute("DROP TABLE IF EXISTS Patients_Ok;")
 # ========== CREAZIONE TABELLE ==========
 
 cursor.execute("""
@@ -14,13 +14,14 @@ CREATE TABLE IF NOT EXISTS Patients (
     dateOfBirth DATE,
     height REAL CHECK(height > 0),
     weight REAL CHECK(weight > 0),
-    Age INTEGER CHECK(Age > 0),
+    age INT,
     Gender CHAR(1) CHECK(Gender IN ('M', 'F', 'O')),
     Nationality TEXT DEFAULT 'Italian',
     ClinicalHistory TEXT,
     PatientID TEXT NOT NULL UNIQUE,
     PatientPassword TEXT,
-    PhoneNumber TEXT UNIQUE
+    PhoneNumber TEXT UNIQUE,
+    DoctorID TEXT
 );
 """)
 
@@ -29,8 +30,20 @@ CREATE TABLE IF NOT EXISTS Questionnaire (
     QuestID INTEGER PRIMARY KEY AUTOINCREMENT,
     PatientID TEXT NOT NULL,
     Date DATE,
-    Q1 INTEGER, Q2 INTEGER, Nota2 TEXT, Q3 INTEGER, Q4 INTEGER, Q5 INTEGER, Q6 INTEGER, Q7 INTEGER,
-    Q8 INTEGER, Q9 TEXT, Q10 INTEGER, Q11 TEXT, Q12 INTEGER, Q13 TEXT
+    Q1 INTEGER, 
+    Q2 INTEGER, 
+    Nota2 TEXT, 
+    Q3 INTEGER, 
+    Q4 INTEGER, 
+    Q5 INTEGER, 
+    Q6 INTEGER, 
+    Q7 INTEGER,
+    Q8 INTEGER, 
+    Q9 TEXT, 
+    Q10 INTEGER, 
+    Q11 TEXT, 
+    Q12 INTEGER, 
+    Q13 TEXT
 );
 """)
 
@@ -170,23 +183,32 @@ VALUES (?, ?, ?, ?, ?, ?, ?)
 
 # Patients
 cursor.executemany("""
-INSERT OR IGNORE INTO Patients (Name, Surname, dateOfBirth, height, weight, Age, Gender, Nationality, ClinicalHistory, PatientID, PatientPassword, PhoneNumber)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+INSERT OR IGNORE INTO Patients (Name, Surname, dateOfBirth, height, weight, Age, Gender, Nationality, ClinicalHistory, PatientID, PatientPassword, PhoneNumber, DoctorID)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, [
-    ("Luca", "Bianchi", "2000-05-15", 1.75, 70, 33, "M", "Italiano", "Nessuna", "PAT001", "password123", "1234567890"),
-    ("Lucia", "Garofalo", "2004-06-15", 1.65, 60, 25, "F", "Italiano", "Nessuna", "PAT002", "345678", "1234567899"),
-    ("Marco", "Verdi", "1992-03-22", 1.80, 85, 32, "M", "Italiano", "Asma lieve", "PAT003", "pass333", "1234562222"),
-    ("Marco", "Esposito", "1956-06-16", 1.87, 90, 30, "M", "Italiano", "Osa moderata", "PAT009", "pass333", "1234562226"),
-    ("Angelo", "Galli", "1992-04-26", 1.70, 80, 30, "M", "Italiano", "Osa moderata", "PAT010", "pass333", "1234562228")
+    ('Luca', 'Bianchi', '2000-05-15', 1.75, 70, None, 'M', 'Italiano', 'Nessuna', 'PAT001', 'password123', '1234567890', 'DOC001'),
+    ('Lucia', 'Garofalo', '2004-06-15', 1.65, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT002', '345678', '1234567899', 'DOC001'),
+    ('Marco', 'Verdi', '1992-03-22', 1.80, 85, None, 'M', 'Italiano', 'Asma lieve', 'PAT003', 'pass333', '1234562222', 'DOC001'),
+    ('Chiara', 'Neri', '1990-01-12', 1.68, 62, None, 'F', 'Italiano', 'Nessuna', 'PAT004', 'chiara90', '1234562233', 'DOC001'),
+    ('Giorgio', 'Fontana', '1985-07-08', 1.82, 88, None, 'M', 'Italiano', 'Ipertensione', 'PAT005', 'giorgio85', '1234562244', 'DOC001'),
+    ('Federica', 'Russo', '1997-10-22', 1.60, 55, None, 'F', 'Italiano', 'Nessuna', 'PAT006', 'fede97', '1234562255', 'DOC001'),
+    ('Valerio', 'Bassi', '1980-11-15', 1.75, 78, None, 'M', 'Italiano', 'Diabete', 'PAT007', 'valbass80', '1234562266', 'DOC001'),
+    ('Irene', 'Ferri', '1995-02-25', 1.70, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT008', 'irenef95', '1234562277', 'DOC001'),
+    ('Marco', 'Esposito', '1956-06-16', 1.87, 90, None, 'M', 'Italiano', 'Osa moderata', 'PAT009', 'pass333', '1234562226', 'DOC001'),
+    ('Angelo', 'Galli', '1992-04-26', 1.70, 80, None, 'M', 'Italiano', 'Osa moderata', 'PAT010', 'pass333', '1234562228', 'DOC001'),
+    ('Giulia', 'Conti', '2001-08-10', 1.68, 58, None, 'F', 'Italiano', 'Nessuna', 'PAT011', 'giuly01', '1234562299', 'DOC001'),
+    ('Davide', 'Rizzi', '1993-03-18', 1.78, 75, None, 'M', 'Italiano', 'Allergie stagionali', 'PAT012', 'davidr', '1234562300', 'DOC001'),
+    ('Marta', 'De Luca', '1989-09-29', 1.66, 65, None, 'F', 'Italiano', 'Nessuna', 'PAT013', 'marta89', '1234562301', 'DOC001'),
+    ('Stefano', 'Barbieri', '1975-05-03', 1.85, 95, None, 'M', 'Italiano', 'Ipertensione', 'PAT014', 'stefano75', '1234562302', 'DOC001'),
+    ('Elena', 'Romano', '1998-12-01', 1.64, 59, None, 'F', 'Italiano', 'Nessuna', 'PAT015', 'elena98', '1234562303', 'DOC001')
 ])
 
-
-# Popola Appointments da 16 Maggio a 16 Giugno 2025
+# Popola Appointments da 16 Maggio a 30 Giugno 2025
 slot_times = ["08:30", "09:30", "10:30", "11:30", "12:30", "13:30", "14:30", "15:30", "16:30"]
-doctors = [("DOC001", "Mario Rossi"), ("DOC002", "Anna Vincentelli")]
+doctors = [("DOC001", "Mario Rossi")]
 appointments = []
 start_date = datetime(2025, 5, 16).date()
-end_date = datetime(2025, 6, 16).date()
+end_date = datetime(2025, 6, 30).date()
 current_date = start_date
 
 while current_date <= end_date:
@@ -198,15 +220,28 @@ while current_date <= end_date:
 
 # Slot prenotati
 booked_slots = [
-    ("2025-05-19", "08:30", "DOC001", "Mario Rossi", "booked", "PAT001", "Luca Bianchi"),
-    ("2025-05-23", "13:30", "DOC001", "Mario Rossi", "booked", "PAT002", "Lucia Garofalo"),
+    ("2025-06-12", "09:30", "DOC001", "Mario Rossi", "booked", "PAT001", "Luca Bianchi"),
+    ("2025-06-07", "14:30", "DOC001", "Mario Rossi", "booked", "PAT002", "Lucia Garofalo"),
+    ("2025-05-27", "08:30", "DOC001", "Mario Rossi", "booked", "PAT003", "Marco Verdi"),
+    ("2025-06-04", "13:30", "DOC001", "Mario Rossi", "booked", "PAT004", "Chiara Neri"),
+    ("2025-05-30", "11:30", "DOC001", "Mario Rossi", "booked", "PAT005", "Giorgio Fontana"),
+    ("2025-06-10", "10:30", "DOC001", "Mario Rossi", "booked", "PAT006", "Federica Russo"),
+    ("2025-05-29", "15:30", "DOC001", "Mario Rossi", "booked", "PAT007", "Valerio Bassi"),
+    ("2025-06-03", "16:30", "DOC001", "Mario Rossi", "booked", "PAT008", "Irene Ferri"),
+    ("2025-05-22", "12:30", "DOC001", "Mario Rossi", "booked", "PAT009", "Marco Esposito"),
+    ("2025-06-05", "08:30", "DOC001", "Mario Rossi", "booked", "PAT010", "Angelo Galli"),
+    ("2025-06-06", "09:30", "DOC001", "Mario Rossi", "booked", "PAT011", "Giulia Conti"),
+    ("2025-05-30", "10:30", "DOC001", "Mario Rossi", "booked", "PAT012", "Davide Rizzi"),
+    ("2025-06-03", "11:30", "DOC001", "Mario Rossi", "booked", "PAT013", "Marta De Luca"),
+    ("2025-06-03", "14:30", "DOC001", "Mario Rossi", "booked", "PAT014", "Stefano Barbieri"),
+    ("2025-06-08", "15:30", "DOC001", "Mario Rossi", "booked", "PAT015", "Elena Romano"),
 ]
 for date, time_slot, doc_id, doctor_name, status, pat_id, pat_name in booked_slots:
     appointments.append((date, time_slot, doc_id, doctor_name, status, pat_id, pat_name))
 
 
 cursor.executemany("""
-INSERT INTO Appointments (date, time, doctor_id, doctor_name, status, patient_id, patient_name)
+INSERT OR IGNORE INTO Appointments (date, time, doctor_id, doctor_name, status, patient_id, patient_name)
 VALUES (?, ?, ?, ?, ?, ?, ?)
 """, appointments)
 

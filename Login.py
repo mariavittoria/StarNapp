@@ -3,6 +3,8 @@ import sqlite3
 import os
 from PIL import Image
 import tkinter.ttk as ttk
+#import mysql.connector
+from datetime import datetime
 
 print("Login.py loaded")
 
@@ -13,8 +15,7 @@ class AppProg:
         self.cursor = None
         self.setup_database()
 
-        ctk.set_appearance_mode("dark")
-        ctk.set_default_color_theme("green")
+        ctk.set_appearance_mode("light")
 
         self.root = ctk.CTk()
         self.root.title("StarNapp | Login")
@@ -221,6 +222,26 @@ class AppProg:
     def __del__(self):
         if self.conn:
             self.conn.close()
+
+
+    def calcola_eta(dob_str):
+        dob = datetime.strptime(dob_str, "%Y-%m-%d")
+        today = datetime.today()
+        return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+    conn = sqlite3.connect("Database_proj.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT patientID, dateOfBirth FROM Patients")
+    pazienti = cursor.fetchall()
+
+    for pid, dob in pazienti:
+        eta = calcola_eta(dob.strftime("%Y-%m-%d"))
+        cursor.execute("UPDATE pazienti SET age = %s WHERE patientID = %s", (eta, pid))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 if __name__ == "__main__":
     AppProg()

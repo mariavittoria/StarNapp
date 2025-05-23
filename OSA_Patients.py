@@ -37,7 +37,7 @@ class OSAPatientsView(ctk.CTkFrame):
             background="white",
             foreground="#046A38",
             fieldbackground="white",
-            rowheight=30
+            rowheight=50  # Increased row height to accommodate doctor name
         )
         style.configure(
             "Custom.Treeview.Heading",
@@ -50,10 +50,15 @@ class OSAPatientsView(ctk.CTkFrame):
             background=[("active", "#73C8AE")]
         )
 
-        # Get data from database
+        # Get data from database with doctor information
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM OSA_Patients")
+        cursor.execute("""
+            SELECT o.*, d.Name as DoctorName, d.Surname as DoctorSurname 
+            FROM OSA_Patients o
+            LEFT JOIN Patients p ON o.PatientID = p.PatientID
+            LEFT JOIN Doctors d ON p.DoctorID = d.doctorID
+        """)
         rows = cursor.fetchall()
         column_names = [description[0] for description in cursor.description]
         conn.close()
@@ -79,8 +84,13 @@ class OSAPatientsView(ctk.CTkFrame):
         self.tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
+        # Insert data with doctor information
         for row in rows:
-            self.tree.insert("", "end", values=row)
+            # Create a custom text that includes the doctor's name
+            values = list(row)
+            doctor_name = f"{values[-2]} {values[-1]}" if values[-2] and values[-1] else "No doctor assigned"
+            values[2] = f"{values[2]}\nAssigned doctor: {doctor_name}"  # Add doctor name under patient name
+            self.tree.insert("", "end", values=values[:-2])  # Exclude the doctor name columns
 
         # Bind double-click event
         self.tree.bind("<Double-1>", self.on_double_click)
