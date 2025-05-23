@@ -3,6 +3,7 @@ import datetime
 from datetime import date
 import customtkinter as ctk
 from PIL import Image
+import os
 
 
 class PatientMainView(ctk.CTk):
@@ -75,8 +76,8 @@ class PatientMainView(ctk.CTk):
         # Add logo at the bottom of sidebar
         try:
             logo_image = ctk.CTkImage(
-                light_image=Image.open("logo.png"),
-                dark_image=Image.open("logo.png"),
+                light_image=Image.open(os.path.join("images", "logo.png")),
+                dark_image=Image.open(os.path.join("images", "logo.png")),
                 size=(100, 100)
             )
             logo_label = ctk.CTkLabel(
@@ -517,7 +518,25 @@ class PatientMainView(ctk.CTk):
     def save_answers_to_db(self):
         conn = sqlite3.connect("Database_proj.db")
         c = conn.cursor()
-        values = {"PatientID": self.patient_id, "Date": datetime.date.today().isoformat(), **self.answers}
+        
+        # Convert answers to appropriate types
+        values = {
+            "PatientID": self.patient_id,
+            "Date": datetime.date.today().isoformat()
+        }
+        
+        # Convert answers to appropriate types
+        for key, value in self.answers.items():
+            if key in ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q10", "Q12"]:
+                # Convert to integer for numeric questions
+                try:
+                    values[key] = int(value) if value.isdigit() else 0
+                except (ValueError, AttributeError):
+                    values[key] = 0
+            else:
+                # Keep as text for text questions
+                values[key] = str(value) if value else ""
+
         columns = ', '.join(values.keys())
         placeholders = ', '.join('?' for _ in values)
         sql = f"INSERT INTO Questionnaire ({columns}) VALUES ({placeholders})"
@@ -530,7 +549,7 @@ class PatientMainView(ctk.CTk):
 
         notify_medico = any([
             note and note.strip(),
-            apnea and apnea.isdigit() and int(apnea) > 1,
+            apnea and str(apnea).isdigit() and int(apnea) > 1,
             therapy == "No"
         ])
 

@@ -3,7 +3,6 @@ import sqlite3
 import os
 from PIL import Image
 import tkinter.ttk as ttk
-#import mysql.connector
 from datetime import datetime
 
 print("Login.py loaded")
@@ -44,9 +43,7 @@ class AppProg:
             # Load the image
             image_path = os.path.join("images", "logo.png")
             logo_image = Image.open(image_path)
-            # Resize the image to desired dimensions with better quality
             logo_image = logo_image.resize((300, 300), Image.Resampling.LANCZOS)
-            # Convert to PhotoImage with higher quality
             self.logo_photo = ctk.CTkImage(
                 light_image=logo_image,
                 dark_image=logo_image,
@@ -145,6 +142,65 @@ class AppProg:
         )
         self.message_label.pack(pady=(10, 0))
 
+    def login(self):
+        user_id = self.email_entry.get().strip()
+        password = self.password_entry.get().strip()
+        role = self.role_option.get()
+
+        # Update all patients' ages
+        self.cursor.execute("SELECT PatientID, dateOfBirth FROM Patients")
+        patients = self.cursor.fetchall()
+        for pid, dob in patients:
+            new_age = self.calcola_eta(dob)
+            self.cursor.execute("UPDATE Patients SET age = ? WHERE PatientID = ?", (new_age, pid))
+        self.conn.commit()
+
+        if not user_id or not password:
+            self.message_label.configure(text="Please fill in all fields", text_color="red")
+            return
+
+        try:
+            if role == "Doctor":
+                self.cursor.execute(
+                    "SELECT * FROM Doctors WHERE doctorID = ? AND DoctorPassword = ?", 
+                    (user_id, password)
+                )
+                result = self.cursor.fetchone()
+                
+                if result:
+                    # Update all patients' ages
+                    self.cursor.execute("SELECT PatientID, dateOfBirth FROM Patients")
+                    patients = self.cursor.fetchall()
+                    for pid, dob in patients:
+                        new_age = self.calcola_eta(dob)
+                        self.cursor.execute("UPDATE Patients SET age = ? WHERE PatientID = ?", (new_age, pid))
+                    self.conn.commit()
+                    
+                    self.user_id = user_id
+                    self.message_label.configure(text="Doctor login successful", text_color="green")
+                    self.go_to_home_doctor()
+                else:
+                    self.message_label.configure(text="Invalid doctor credentials", text_color="red")
+
+            elif role == "Patient":
+                self.cursor.execute(
+                    "SELECT * FROM Patients WHERE PatientID = ? AND PatientPassword = ?", 
+                    (user_id, password)
+                )
+                result = self.cursor.fetchone()
+                
+                if result:
+                    self.user_id = user_id
+                    self.message_label.configure(text="Patient login successful", text_color="green")
+                    self.go_to_home_patient()
+                else:
+                    self.message_label.configure(text="Invalid patient credentials", text_color="red")
+
+        except sqlite3.Error as e:
+            self.message_label.configure(text=f"Database error: {str(e)}", text_color="red")
+        except Exception as e:
+            self.message_label.configure(text=f"An error occurred: {str(e)}", text_color="red")
+
     def go_to_home_doctor(self):
         try:
             from doctor_main_view import DoctorMainView
@@ -163,54 +219,18 @@ class AppProg:
             # Create new window before destroying the old one
             patient_window = PatientMainView(self.user_id)
             self.root.withdraw()  # Hide the login window instead of destroying it
+            
+            # Ensure the window is properly configured
+            patient_window.update_idletasks()  # Update the window
+            patient_window.deiconify()  # Make sure it's visible
+            patient_window.lift()  # Bring to front
+            patient_window.focus_force()  # Force focus
+            
             patient_window.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(patient_window))
             patient_window.mainloop()
         except Exception as e:
             self.message_label.configure(text=f"Error loading patient interface: {str(e)}", text_color="red")
             self.root.deiconify()  # Show the login window again if there's an error
-
-    def login(self):
-        user_id = self.email_entry.get().strip()
-        password = self.password_entry.get().strip()
-        role = self.role_option.get()
-
-        if not user_id or not password:
-            self.message_label.configure(text="Please fill in all fields", text_color="red")
-            return
-
-        try:
-            if role == "Doctor":
-                self.cursor.execute(
-                    "SELECT * FROM Doctors WHERE doctorID = ? AND DoctorPassword = ?", 
-                    (user_id, password)
-                )
-                result = self.cursor.fetchone()
-                
-                if result:
-                    self.user_id = user_id
-                    self.message_label.configure(text="Doctor login successful", text_color="green")
-                    self.go_to_home_doctor()
-                else:
-                    self.message_label.configure(text="Invalid doctor credentials", text_color="red")
-
-            elif role == "Patient":
-                self.cursor.execute(
-                    "SELECT * FROM Patients WHERE PatientID = ? AND PatientPassword = ?", 
-                    (user_id, password)
-                )
-                result = self.cursor.fetchone()
-
-                if result:
-                    self.user_id = user_id
-                    self.message_label.configure(text="Patient login successful", text_color="green")
-                    self.go_to_home_patient()
-                else:
-                    self.message_label.configure(text="Invalid patient credentials", text_color="red")
-
-        except sqlite3.Error as e:
-            self.message_label.configure(text=f"Database error: {str(e)}", text_color="red")
-        except Exception as e:
-            self.message_label.configure(text=f"An error occurred: {str(e)}", text_color="red")
 
     def on_closing(self, window=None):
         if window:
@@ -223,25 +243,12 @@ class AppProg:
         if self.conn:
             self.conn.close()
 
-
+    @staticmethod
     def calcola_eta(dob_str):
+        """Calculate age from date of birth string."""
         dob = datetime.strptime(dob_str, "%Y-%m-%d")
         today = datetime.today()
         return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-
-    conn = sqlite3.connect("Database_proj.db")
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT patientID, dateOfBirth FROM Patients")
-    pazienti = cursor.fetchall()
-
-    for pid, dob in pazienti:
-        eta = calcola_eta(dob.strftime("%Y-%m-%d"))
-        cursor.execute("UPDATE pazienti SET age = %s WHERE patientID = %s", (eta, pid))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 if __name__ == "__main__":
     AppProg()
