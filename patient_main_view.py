@@ -804,7 +804,13 @@ class PatientMainView(ctk.CTk):
             widget.destroy()
 
         confirmation_text = f"You confirmed your appointment with Dr. {doctor_name} on {self.selected_date.strftime('%A, %d %B')} at {time}"
-        confirmation_label = ctk.CTkLabel(self.main_frame, text=confirmation_text, font=("Arial", 16),fg_color="#046A38")
+        confirmation_label = ctk.CTkLabel(
+            self.main_frame,
+            text=confirmation_text, 
+            font=("Arial", 16),
+            fg_color="transparent",
+            text_color="#046A38"
+        )
         confirmation_label.pack(pady=50)
 
         back_button = ctk.CTkButton(self.main_frame, text="Back to Visits", command=self.open_visits)
