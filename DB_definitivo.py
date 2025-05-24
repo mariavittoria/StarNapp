@@ -169,6 +169,15 @@ CREATE TABLE IF NOT EXISTS Seven_days_patients_ok (
 );
 """)
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS SupportMessages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    user_type TEXT,
+    message TEXT,
+    date TEXT
+);
+""")
 # ========== INSERIMENTO DATI ==========
 
 # Doctors
@@ -299,15 +308,14 @@ VALUES (?, ?, ?, ?, ?, ?)
 """, indexes)
 
 # Inserimento Questionnaire
-#questionnaires = [
-#    ("PAT001", "2025-04-20", 1, 2, "Nota2 esempio", 3, 4, 5, 6, 7, 8, "Q9 esempio", 10, "Q11 esempio", 12, "Q13 esempio"),
-#    ("PAT002", "2025-04-21", 2, 3, "Nota2 esempio", 4, 5, 6, 7, 8, 9, "Q9 esempio", 11, "Q11 esempio", 13, "Q13 esempio")
-#]
-
-#cursor.executemany("""
-#INSERT OR IGNORE INTO Questionnaire (PatientID, Date, Q1, Q2, Nota2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13)
-#VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-#""", questionnaires)
+questionnaires = [
+    ("PAT001", "2025-04-20", 2, 1, "Slept well", 0, 0, 0, 0, 0, 1, "None", 0, "", 1, "75"),
+    ("PAT002", "2025-04-21", 3, 0, "Had trouble falling asleep", 1, 1, 1, 0, 2, 1, "Forgot to take medication", 1, "Please check my therapy", 0, "")
+]
+cursor.executemany("""
+INSERT OR IGNORE INTO Questionnaire (PatientID, Date, Q1, Q2, Nota2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", questionnaires)
 
 # Inserimento Notifications
 notifications = [
@@ -322,9 +330,11 @@ VALUES (?, ?, ?, ?, ?, ?)
 
 # OSA_Patients
 osa_patients = [
-    ("PAT010", "Angelo", "Galli", "2025-01-01", 17),
-    ("PAT011", "Francesca", "Colombo", "2025-01-01", 19),
-    ("PAT021", "Roberto", "Ferrari", "2025-01-01", 15)
+    ("PAT001", "Luca", "Bianchi", "2025-04-20", 5),
+    ("PAT002", "Lucia", "Garofalo", "2025-04-21", 12),
+    ("PAT009", "Marco", "Esposito", "2025-04-24", 0),
+    ("PAT010", "Angelo", "Galli", "2025-04-22", 2),
+    ("PAT011", "Giulia", "Conti", "2025-04-22", 4)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO OSA_Patients (PatientID, Name, Surname, Date, AHI)
@@ -333,9 +343,9 @@ VALUES (?, ?, ?, ?, ?)
 
 # Possible_Follow_Up_Patients
 possible_follow_up = [
-    ("PAT009", "Marco", "Esposito", "2025-01-01", 90),
-    ("PAT030", "Luca", "Greco", "2025-01-01", 94),
-    ("PAT041", "Elena", "Conti", "2025-01-01", 97)
+    ("PAT004", "Chiara", "Neri", "2025-04-21", 30),
+    ("PAT007", "Valerio", "Bassi", "2025-04-21", 25),
+    ("PAT008", "Irene", "Ferri", "2025-04-21", 28)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Possible_Follow_Up_Patients (PatientID, Name, Surname, Date, Days_since_last_OSA)
@@ -344,9 +354,9 @@ VALUES (?, ?, ?, ?, ?)
 
 # Follow_Up_Patients
 follow_up_patients = [
-    ("PAT019", "Davide", "De Luca", "2025-01-01", 96, 2),
-    ("PAT024", "Martina", "Rinaldi", "2025-01-01", 97, 3),
-    ("PAT032", "Alessandra", "Romano", "2025-01-01", 92, 12)
+    ("PAT006", "Federica", "Russo", "2025-04-21", 85, 8),
+    ("PAT012", "Davide", "Rizzi", "2025-04-21", 82, 7),
+    ("PAT014", "Stefano", "Barbieri", "2025-04-21", 80, 9)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Follow_Up_Patients (PatientID, Name, Surname, Date, SpO2_min, ODI)
@@ -355,15 +365,26 @@ VALUES (?, ?, ?, ?, ?, ?)
 
 # Seven_days_patients_ok
 seven_ok = [
-    ("PAT017", "Elena", "Moretti", "2025-01-01", 7),
-    ("PAT033", "Franco", "Lombardi", "2025-01-01", 7),
-    ("PAT052", "James", "Anderson", "2025-01-01", 8),
-    ("PAT025", "Chen", "Wei", "2025-01-01", 11)
+    ("PAT003", "Marco", "Verdi", "2025-04-21", 7),
+    ("PAT005", "Giorgio", "Fontana", "2025-04-21", 7),
+    ("PAT013", "Marta", "De Luca", "2025-04-21", 7),
+    ("PAT015", "Elena", "Romano", "2025-04-21", 7)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Seven_days_patients_ok (PatientID, Name, Surname, Date, Days_since_last_OSA)
 VALUES (?, ?, ?, ?, ?)
 """, seven_ok)
+
+# Remove duplicate entries and invalid patient IDs from Indexes
+cursor.execute("DELETE FROM Indexes WHERE PatientID = 'PAT021'")
+cursor.execute("""
+    DELETE FROM Indexes 
+    WHERE rowid NOT IN (
+        SELECT MIN(rowid) 
+        FROM Indexes 
+        GROUP BY PatientID, Date
+    )
+""")
 
 conn.commit()
 conn.close()

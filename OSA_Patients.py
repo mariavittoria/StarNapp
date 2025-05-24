@@ -13,9 +13,12 @@ import datetime
 from ahi_view_doctor import AHIViewDoctor
 
 class OSAPatientsView(ctk.CTkFrame):
-    def __init__(self, parent_frame, user_id):
+    def __init__(self, parent_frame, doctor_id):
         super().__init__(parent_frame)
         self.pack(fill="both", expand=True)
+        
+        # Configure the frame with light blue-green background
+        self.configure(fg_color="#E8F5F2")
         
         # Title
         title = ctk.CTkLabel(
@@ -25,7 +28,7 @@ class OSAPatientsView(ctk.CTkFrame):
             text_color="#046A38"
         )
         title.pack(pady=20)
-
+        
         # Create table frame with white background and rounded corners
         table_frame = ctk.CTkFrame(self, fg_color="white", corner_radius=10)
         table_frame.pack(padx=20, pady=20, fill="both", expand=True)
@@ -37,45 +40,40 @@ class OSAPatientsView(ctk.CTkFrame):
             background="white",
             foreground="#046A38",
             fieldbackground="white",
-            rowheight=50  # Increased row height to accommodate doctor name
+            rowheight=30
         )
         style.configure(
             "Custom.Treeview.Heading",
-            background="#73C8AE",
-            foreground="white",
-            relief="flat"
+            background="#A8DAB5",  # Light green background for headers
+            foreground="#046A38",  # Dark green text
+            relief="flat",
+            font=("Arial", 10, "bold")
         )
         style.map(
             "Custom.Treeview.Heading",
-            background=[("active", "#73C8AE")]
+            background=[("active", "#A8DAB5")]  # Keep the same color when hovering
         )
-
-        # Get data from database with doctor information
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        cursor.execute("""
-            SELECT o.*, d.Name as DoctorName, d.Surname as DoctorSurname 
-            FROM OSA_Patients o
-            LEFT JOIN Patients p ON o.PatientID = p.PatientID
-            LEFT JOIN Doctors d ON p.DoctorID = d.doctorID
-        """)
-        rows = cursor.fetchall()
-        column_names = [description[0] for description in cursor.description]
-        conn.close()
 
         # Create Treeview
         self.tree = ttk.Treeview(
             table_frame,
             style="Custom.Treeview",
-            columns=column_names,
+            columns=("Patient ID", "Name", "Surname", "AHI"),
             show="headings"
         )
 
         # Configure columns
-        for col in column_names:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=100, anchor="center")
-            
+        self.tree.heading("Patient ID", text="Patient ID")
+        self.tree.heading("Name", text="Name")
+        self.tree.heading("Surname", text="Surname")
+        self.tree.heading("AHI", text="AHI")
+
+        # Set column widths and center text
+        self.tree.column("Patient ID", width=100, anchor="center")
+        self.tree.column("Name", width=150, anchor="center")
+        self.tree.column("Surname", width=150, anchor="center")
+        self.tree.column("AHI", width=100, anchor="center")
+
         # Add scrollbar
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=scrollbar.set)
@@ -84,16 +82,34 @@ class OSAPatientsView(ctk.CTkFrame):
         self.tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-        # Insert data with doctor information
-        for row in rows:
-            # Create a custom text that includes the doctor's name
-            values = list(row)
-            doctor_name = f"{values[-2]} {values[-1]}" if values[-2] and values[-1] else "No doctor assigned"
-            values[2] = f"{values[2]}\nAssigned doctor: {doctor_name}"  # Add doctor name under patient name
-            self.tree.insert("", "end", values=values[:-2])  # Exclude the doctor name columns
+        # Load data
+        self.load_patients(doctor_id)
 
-        # Bind double-click event
-        self.tree.bind("<Double-1>", self.on_double_click)
+    def load_patients(self, doctor_id):
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("""
+                SELECT PatientID, Name, Surname, AHI
+                FROM OSA_Patients
+                ORDER BY Date DESC
+            """)
+            
+            patients = cursor.fetchall()
+            
+            # Clear existing items
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+            
+            # Insert patients
+            for patient in patients:
+                self.tree.insert("", "end", values=patient)
+                
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
 
     def on_double_click(self, event):
         # Get selected item
@@ -101,8 +117,8 @@ class OSAPatientsView(ctk.CTkFrame):
         values = self.tree.item(item)['values']
         
         # Extract patient info
-        self.patient_id = values[0]  # Assuming PatientID is the second column
-        self.patient_name = f"{values[1]} {values[2]}"  # Assuming Name and Surname are the third and fourth columns
+        self.patient_id = values[0]  # Assuming PatientID is the first column
+        self.patient_name = f"{values[1]} {values[2]}"  # Assuming Name and Surname are the second and third columns
         
         # Create a new window for patient options
         self.options_window = ctk.CTkToplevel()
@@ -494,14 +510,14 @@ class OSAPatientsView(ctk.CTkFrame):
         finally:
             conn.close()
 
-    def get_osa_patients(self):
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM OSA_Patients")
-        rows = cursor.fetchall()
-        column_names = [description[0] for description in cursor.description]
-        conn.close()
-        return column_names, rows
+    # def get_osa_patients(self):
+    #     conn = sqlite3.connect("Database_proj.db")
+    #     cursor = conn.cursor()
+    #     cursor.execute("SELECT * FROM OSA_Patients")
+    #     rows = cursor.fetchall()
+    #     column_names = [description[0] for description in cursor.description]
+    #     conn.close()
+    #     return column_names, rows
     
     def save_drugs(self, patient_id):
         conn = sqlite3.connect("Database_proj.db")

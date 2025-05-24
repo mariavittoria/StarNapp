@@ -1,12 +1,13 @@
-import customtkinter
+import customtkinter as ctk
 import os
 from PIL import Image
 import sqlite3
 import tkinter.ttk as ttk
 from OSA_Patients import OSAPatientsView  
+import datetime
 
 
-class DoctorMainView(customtkinter.CTk):
+class DoctorMainView(ctk.CTk):
     def __init__(self, user_id):
         super().__init__()
         
@@ -15,18 +16,18 @@ class DoctorMainView(customtkinter.CTk):
 
 
         self.title("Doctor Main View")
-        self.geometry("900x700")
+        self.geometry("900x600")
 
         # Layout setup
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
         # Sidebar
-        self.sidebar = customtkinter.CTkFrame(self, corner_radius=0, fg_color="#A8DAB5")  # Light green background
+        self.sidebar = ctk.CTkFrame(self, corner_radius=0, fg_color="#A8DAB5")  # Light green background
         self.sidebar.grid(row=0, column=0, sticky="nsw")
-        self.sidebar.grid_rowconfigure(6, weight=1)
+        self.sidebar.grid_rowconfigure(8, weight=1)  # Changed back to 8 for proper spacing
 
-        self.doctor_label = customtkinter.CTkLabel(
+        self.doctor_label = ctk.CTkLabel(
             self.sidebar, 
             text=f"🧑‍⚕️ {self.doctor_name}", 
             font=("Arial", 16, "bold"),
@@ -37,14 +38,16 @@ class DoctorMainView(customtkinter.CTk):
         # Bottoni sidebar
         buttons = [
             ("OSA patients", self.go_to_OSA_Patients),
+            ("7 Days OK Patients", self.go_to_7_days_ok),
             ("Follow up patients", self.go_to_follow_up),
             ("Possible Follow up", self.go_to_possible_follow_up),
-            ("7 Days OK Patients ", self.go_to_7_days_ok),
             ("Visits", self.go_to_visits),
+            ("Notifications", self.show_notifications)
         ]
+        
         self.sidebar_buttons = []  # Store buttons for selection state
         for i, (text, command) in enumerate(buttons):
-            btn = customtkinter.CTkButton(
+            btn = ctk.CTkButton(
                 self.sidebar, 
                 text=text, 
                 height=40,
@@ -64,33 +67,138 @@ class DoctorMainView(customtkinter.CTk):
                     text_color="white"  # White text
                 )
 
-        # Main content
-        self.main_view = customtkinter.CTkFrame(self, fg_color="#E8F5F2")  # Light blue-green background
-        self.main_view.grid(row=0, column=1, sticky="nsew")
-        self.main_view.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        # Add logo at the bottom of sidebar
+        try:
+            logo_image = ctk.CTkImage(
+                light_image=Image.open(os.path.join("images", "logo.png")),
+                dark_image=Image.open(os.path.join("images", "logo.png")),
+                size=(100, 100)
+            )
+            logo_label = ctk.CTkLabel(
+                self.sidebar,
+                image=logo_image,
+                text=""
+            )
+            logo_label.grid(row=7, column=0, padx=20, pady=(20, 5), sticky="sw")
+        except Exception as e:
+            print(f"Error loading logo: {e}")
+            # Fallback to text if logo fails to load
+            logo_label = ctk.CTkLabel(
+                self.sidebar,
+                text="StarNapp",
+                font=("Arial", 20, "bold"),
+                text_color="#046A38"
+            )
+            logo_label.grid(row=7, column=0, padx=20, pady=(0,5), sticky="ew")
 
-        # Carica vista iniziale
-        self.switch_main_view(self.go_to_OSA_Patients)
+        # Support Button below the logo
+        support_button = ctk.CTkButton(
+            self.sidebar,
+            text="Request Support",
+            height=40,
+            command=self.contact_support,
+            fg_color="transparent",
+            text_color="#046A38",
+            hover_color="#92D6B5",
+            corner_radius=0
+        )
+        support_button.grid(row=8, column=0, padx=10, sticky="ew")
 
-    def switch_main_view(self, content_function):
-        for widget in self.main_view.winfo_children():
+        # Main content frame
+        self.main_frame = ctk.CTkFrame(self, fg_color="#E8F5F2")
+        self.main_frame.grid(row=0, column=1, sticky="nsew")
+        self.main_frame.grid_columnconfigure(0, weight=1)
+
+        # Load initial view
+        self.go_to_OSA_Patients()
+
+    def select_sidebar_button(self, text, command):
+        # Reset all buttons to default state
+        for btn in self.sidebar_buttons:
+            btn.configure(
+                fg_color="transparent",
+                text_color="#046A38"
+            )
+        
+        # Set selected button state
+        for btn in self.sidebar_buttons:
+            if btn.cget("text") == text:
+                btn.configure(
+                    fg_color="#046A38",
+                    text_color="white"
+                )
+                break
+        
+        # Execute the command
+        command()
+
+    def contact_support(self):
+        support_window = ctk.CTkToplevel(self)
+        support_window.title("Contact Support")
+        support_window.geometry("400x300")
+        support_window.configure(fg_color="#E8F5F2")
+        
+        label = ctk.CTkLabel(
+            support_window, 
+            text="Write your message below:", 
+            font=("Arial", 14),
+            text_color="#046A38"
+        )
+        label.pack(pady=10)
+
+        message_entry = ctk.CTkTextbox(
+            support_window, 
+            height=150, 
+            wrap="word",
+            fg_color="white"
+        )
+        message_entry.pack(padx=20, pady=10, fill="both", expand=True)
+
+        def send_message():
+            message = message_entry.get("1.0", "end").strip()
+            if message:
+                self.save_support_message(message)
+                support_window.destroy()
+
+        send_button = ctk.CTkButton(
+            support_window, 
+            text="Send", 
+            command=send_message,
+            fg_color="#046A38",
+            text_color="white"
+        )
+        send_button.pack(pady=10)
+
+    def save_support_message(self, message):
+        try:
+            conn = sqlite3.connect("Database_proj.db")
+            cursor = conn.cursor()
+
+            # Insert the support message
+            cursor.execute("""
+                INSERT INTO SupportMessages (user_id, user_type, message, date)
+                VALUES (?, ?, ?, ?)
+            """, (self.user_id, "doctor", message, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Error saving support message: {e}")
+
+    def show_notifications(self):
+        # Clear main frame
+        for widget in self.main_frame.winfo_children():
             widget.destroy()
-        
-        # Create container with light blue-green background
-        container = customtkinter.CTkFrame(self.main_view, fg_color="#E8F5F2")
-        container.pack(fill="both", expand=True, padx=20, pady=20)
-        
-        # Call the content function with the container
-        content_function(container)
-
-    def get_osa_patients(self):
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM OSA_Patients")
-        rows = cursor.fetchall()
-        column_names = [description[0] for description in cursor.description]
-        conn.close()
-        return column_names, rows
+            
+            
+        # Create notifications view
+        from notifications_view import NotificationsView
+        notifications_view = NotificationsView(
+            self.main_frame,
+            user_id=self.user_id,
+            user_type="doctor"
+        )
+        notifications_view.pack(fill="both", expand=True)
 
     def get_doctor_name(self, user_id) :
             conn = sqlite3.connect("Database_proj.db")
@@ -100,60 +208,55 @@ class DoctorMainView(customtkinter.CTk):
             conn.close()
             return f"{result[0]} {result[1]}" if result else "Unknown Doctor"
 
-    def go_to_OSA_Patients(self, container=None):
-        if container is None:
-            container = self.main_view
+    def go_to_OSA_Patients(self):
+        # Clear main frame
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
             
+        # Create OSA patients view
         from OSA_Patients import OSAPatientsView
-        OSAPatientsView(container, self.user_id)
+        osa_view = OSAPatientsView(self.main_frame, self.user_id)
+        osa_view.pack(fill="both", expand=True)
 
-    def go_to_possible_follow_up(self, container=None):
-        if container is None:
-            container = self.main_view
+    def go_to_possible_follow_up(self):
+        # Clear main frame
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
             
+        # Create possible follow up view
         from Possible_Follow_Up_Patients import PossibleFollowUpPatientsView
-        PossibleFollowUpPatientsView(container, self.user_id)
+        follow_up_view = PossibleFollowUpPatientsView(self.main_frame, self.user_id)
+        follow_up_view.pack(fill="both", expand=True)
 
-    def go_to_follow_up(self, container=None):
-        if container is None:
-            container = self.main_view
+    def go_to_follow_up(self):
+        # Clear main frame
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
             
+        # Create follow up view
         from Follow_Up_Patients import FollowUpPatientsView
-        FollowUpPatientsView(container, self.user_id)
+        follow_up_view = FollowUpPatientsView(self.main_frame, self.user_id)
+        follow_up_view.pack(fill="both", expand=True)
     
-    def go_to_visits(self, container=None):
-        if container is None:
-            container = self.main_view
+    def go_to_visits(self):
+        # Clear main frame
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
             
+        # Create visits view
         from VisitDoctorView import VisitDoctorView
-        VisitDoctorView(container, self.user_id)
+        visits_view = VisitDoctorView(self.main_frame, self.user_id)
+        visits_view.pack(fill="both", expand=True)
 
-    def go_to_7_days_ok(self, container=None):
-        if container is None:
-            container = self.main_view
+    def go_to_7_days_ok(self):
+        # Clear main frame
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
             
+        # Create 7 days ok view
         from Seven_Days_ok_patients import Seven_Days_Ok_PatientsView
-        Seven_Days_Ok_PatientsView(container, self.user_id)
-
-    def select_sidebar_button(self, text, command):
-        # Reset all buttons to default style
-        for btn in self.sidebar_buttons:
-            btn.configure(
-                fg_color="transparent",
-                text_color="#046A38"  # Dark green text
-            )
-        
-        # Find and highlight the selected button
-        for btn in self.sidebar_buttons:
-            if btn.cget("text") == text:
-                btn.configure(
-                    fg_color="#046A38",  # Dark green background
-                    text_color="white"  # White text
-                )
-                break
-        
-        # Execute the command
-        self.switch_main_view(command)
+        seven_days_view = Seven_Days_Ok_PatientsView(self.main_frame, self.user_id)
+        seven_days_view.pack(fill="both", expand=True)
 
 if __name__ == "__main__":
     app = DoctorMainView(user_id="DOC001")

@@ -6,9 +6,12 @@ from tkinter import ttk
 from patient_indexes_view import PatientIndexes
 
 class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
-    def __init__(self, parent_frame, user_id):
+    def __init__(self, parent_frame, doctor_id):
         super().__init__(parent_frame)
         self.pack(fill="both", expand=True)
+        
+        # Configure the frame with light blue-green background
+        self.configure(fg_color="#E8F5F2")
         
         # Title
         title = ctk.CTkLabel(
@@ -18,7 +21,7 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
             text_color="#046A38"
         )
         title.pack(pady=20)
-
+        
         # Create table frame with white background and rounded corners
         table_frame = ctk.CTkFrame(self, fg_color="white", corner_radius=10)
         table_frame.pack(padx=20, pady=20, fill="both", expand=True)
@@ -34,35 +37,33 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
         )
         style.configure(
             "Custom.Treeview.Heading",
-            background="#73C8AE",
-            foreground="white",
-            relief="flat"
+            background="#A8DAB5",  # Light green background for headers
+            foreground="#046A38",  # Dark green text
+            relief="flat",
+            font=("Arial", 10, "bold")
         )
         style.map(
             "Custom.Treeview.Heading",
-            background=[("active", "#73C8AE")]
+            background=[("active", "#A8DAB5")]  # Keep the same color when hovering
         )
-
-        # Get data from database
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Seven_Days_Ok_Patients")
-        rows = cursor.fetchall()
-        column_names = [description[0] for description in cursor.description]
-        conn.close()
 
         # Create Treeview
         self.tree = ttk.Treeview(
             table_frame,
             style="Custom.Treeview",
-            columns=column_names,
+            columns=("Patient ID", "Name", "Surname"),
             show="headings"
         )
 
         # Configure columns
-        for col in column_names:
-            self.tree.heading(col, text=col)
-            self.tree.column(col, width=100, anchor="center")
+        self.tree.heading("Patient ID", text="Patient ID")
+        self.tree.heading("Name", text="Name")
+        self.tree.heading("Surname", text="Surname")
+
+        # Set column widths and center text
+        self.tree.column("Patient ID", width=100, anchor="center")
+        self.tree.column("Name", width=150, anchor="center")
+        self.tree.column("Surname", width=150, anchor="center")
 
         # Add scrollbar
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
@@ -72,12 +73,34 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
         self.tree.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
-        # Insert data
-        for row in rows:
-            self.tree.insert("", "end", values=row)
+        # Load data
+        self.load_patients(doctor_id)
 
-        # Bind double-click event
-        self.tree.bind("<Double-1>", self.on_double_click)
+    def load_patients(self, doctor_id):
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("""
+                SELECT PatientID, Name, Surname
+                FROM Seven_Days_Patients_ok
+                ORDER BY Date DESC
+            """)
+            
+            patients = cursor.fetchall()
+            
+            # Clear existing items
+            for item in self.tree.get_children():
+                self.tree.delete(item)
+            
+            # Insert patients
+            for patient in patients:
+                self.tree.insert("", "end", values=patient)
+                
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
 
     def on_double_click(self, event):
         # Get selected item

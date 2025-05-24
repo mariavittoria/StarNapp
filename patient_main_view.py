@@ -167,27 +167,11 @@ class PatientMainView(ctk.CTk):
             conn = sqlite3.connect("Database_proj.db")
             cursor = conn.cursor()
 
-            # Create table if it doesn't exist
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS SupportMessages (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    patient_id TEXT,
-                    message TEXT,
-                    date TEXT
-                )
-            """)
-
             # Insert the support message
             cursor.execute("""
-                INSERT INTO SupportMessages (patient_id, message, date)
-                VALUES (?, ?, ?)
-            """, (self.patient_id, message, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-
-            # Create notification for the support request
-            cursor.execute("""
-                INSERT INTO Notifications (PatientID, PatientName, Type, Message)
-                VALUES (?, ?, 'SUPPORT', ?)
-            """, (self.patient_id, self.patient_name, "You have sent a support request"))
+                INSERT INTO SupportMessages (user_id, user_type,message, date)
+                VALUES (?, ?, ?, ?)
+            """, (self.patient_id, "patient", message, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
             conn.commit()
             self.update_notification_count()
