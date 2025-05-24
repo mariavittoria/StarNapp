@@ -57,18 +57,18 @@ class NotificationsView(ctk.CTkFrame):
         )
 
         # Configure columns
-        self.tree.heading("Date", text="Date")
-        self.tree.heading("Patient ID", text="Patient ID")
-        self.tree.heading("Problems with the therapy", text="Problems with the therapy")
-        self.tree.heading("Note for the doctor", text="Note for the doctor")
-        self.tree.heading("Reason of bad sleep", text="Reason of bad sleep")
+        self.tree.heading("Date", text="Date", anchor="center")
+        self.tree.heading("Patient ID", text="Patient ID", anchor="center")
+        self.tree.heading("Problems with the therapy", text="Problems with the therapy", anchor="center")
+        self.tree.heading("Note for the doctor", text="Note for the doctor", anchor="center")
+        self.tree.heading("Reason of bad sleep", text="Reason of bad sleep", anchor="center")
 
         # Set column widths
-        self.tree.column("Date", width=150)
-        self.tree.column("Patient ID", width=100)
-        self.tree.column("Problems with the therapy", width=200)
-        self.tree.column("Note for the doctor", width=200)
-        self.tree.column("Reason of bad sleep", width=200)
+        self.tree.column("Date", width=150, anchor="center")
+        self.tree.column("Patient ID", width=100, anchor="center")
+        self.tree.column("Problems with the therapy", width=200, anchor="center")
+        self.tree.column("Note for the doctor", width=200, anchor="center")
+        self.tree.column("Reason of bad sleep", width=200, anchor="center")
 
         # Add scrollbar
         scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)

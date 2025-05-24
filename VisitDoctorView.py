@@ -12,6 +12,11 @@ class VisitDoctorView(ctk.CTkFrame):
         self.pack(fill="both", expand=True)
         self.doctor_id = doctor_id
         
+        # Initialize current date to next available weekday
+        self.current_date = datetime.now()
+        while self.current_date.weekday() >= 5:  # Skip weekends
+            self.current_date += timedelta(days=1)
+        
         # Configure the frame with light blue-green background
         self.configure(fg_color="#E8F5F2")
         
@@ -56,12 +61,12 @@ class VisitDoctorView(ctk.CTkFrame):
 
     def show_calendar(self):
         # Create a new window for the calendar
-        calendar_window = ctk.CTkToplevel(self)
-        calendar_window.title("Visit Calendar")
-        calendar_window.geometry("1200x800")
+        self.calendar_window = ctk.CTkToplevel(self)
+        self.calendar_window.title("Visit Calendar")
+        self.calendar_window.geometry("1200x800")
         
         # Create main frame
-        main_frame = ctk.CTkFrame(calendar_window, fg_color="white")
+        main_frame = ctk.CTkFrame(self.calendar_window, fg_color="white")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
         # Create navigation frame
@@ -71,11 +76,11 @@ class VisitDoctorView(ctk.CTkFrame):
         # Previous day button
         prev_btn = ctk.CTkButton(
             nav_frame,
-            text="← Previous Day",
+            text="←",
             width=150,
             height=30,
-            fg_color="#73C8AE",
-            hover_color="#046A38",
+            fg_color="#046A38",
+            hover_color="#1f6aa5",
             text_color="white",
             command=lambda: self.navigate_days(-1)
         )
@@ -84,11 +89,11 @@ class VisitDoctorView(ctk.CTkFrame):
         # Next day button
         next_btn = ctk.CTkButton(
             nav_frame,
-            text="Next Day →",
+            text="→",
             width=150,
             height=30,
-            fg_color="#73C8AE",
-            hover_color="#046A38",
+            fg_color="#046A38",
+            hover_color="#1f6aa5",
             text_color="white",
             command=lambda: self.navigate_days(1)
         )
@@ -104,9 +109,6 @@ class VisitDoctorView(ctk.CTkFrame):
         self.days_frame.grid_columnconfigure(2, weight=1)
         self.days_frame.grid_columnconfigure(3, weight=1)
         self.days_frame.grid_columnconfigure(4, weight=1)
-        
-        # Initialize current date
-        self.current_date = datetime.now()
         
         # Show initial 5 days
         self.show_five_days()
@@ -158,8 +160,8 @@ class VisitDoctorView(ctk.CTkFrame):
                     fg_color="#73C8AE" if not is_booked else "#CCCCCC",
                     hover_color="#046A38" if not is_booked else "#999999",
                     text_color="white",
-                    command=lambda d=current_day.strftime("%Y-%m-%d"), t=time, n=patient_name, s=patient_surname: 
-                        self.show_appointment_details(d, t, n, s) if is_booked else None
+                    command=lambda d=current_day.strftime("%Y-%m-%d"), t=time, n=patient_name, s=patient_surname, b=is_booked: 
+                        self.show_appointment_details(d, t, n, s) if b else None
                 )
                 slot_btn.pack(pady=5)
             
@@ -222,34 +224,46 @@ class VisitDoctorView(ctk.CTkFrame):
             conn.close()
 
     def show_appointment_details(self, date, time, name, surname):
-        # Create details window
-        details_window = ctk.CTkToplevel(self)
-        details_window.title("Appointment Details")
-        details_window.geometry("400x200")
+        # Create details frame in the calendar window
+        details_frame = ctk.CTkFrame(self.calendar_window, fg_color="white", corner_radius=10)
+        details_frame.place(relx=0.5, rely=0.5, anchor="center")
+        
+        # Add close button in top right corner
+        close_btn = ctk.CTkButton(
+            details_frame,
+            text="✕",
+            width=30,
+            height=30,
+            fg_color="transparent",
+            hover_color="#FF9999",
+            text_color="#046A38",
+            command=details_frame.destroy
+        )
+        close_btn.place(relx=1.0, rely=0.0, anchor="ne", x=-5, y=5)
         
         # Patient info
         info_label = ctk.CTkLabel(
-            details_window,
+            details_frame,
             text=f"Patient: {name} {surname}\nDate: {date}\nTime: {time}",
             font=("Arial", 14),
-            text_color="#046A38"
+            text_color="black"
         )
         info_label.pack(pady=20)
         
         # Delete button
         delete_btn = ctk.CTkButton(
-            details_window,
+            details_frame,
             text="Delete Appointment",
             width=200,
             height=40,
             fg_color="#FF9999",
             hover_color="#FF6666",
             text_color="white",
-            command=lambda: self.delete_appointment(date, time, details_window)
+            command=lambda: self.delete_appointment(date, time, details_frame)
         )
         delete_btn.pack(pady=20)
 
-    def delete_appointment(self, date, time, window):
+    def delete_appointment(self, date, time, frame):
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
         
@@ -261,27 +275,23 @@ class VisitDoctorView(ctk.CTkFrame):
             
             conn.commit()
             
-            # Close details window
-            window.destroy()
+            # Remove details frame
+            frame.destroy()
             
             # Refresh calendar
             self.show_five_days()
             
             # Show success message
-            success_window = ctk.CTkToplevel(self)
-            success_window.title("Success")
-            success_window.geometry("300x150")
-            
             success_label = ctk.CTkLabel(
-                success_window,
+                self.calendar_window,
                 text="Appointment deleted successfully!",
                 font=("Arial", 14),
                 text_color="#046A38"
             )
-            success_label.pack(pady=20)
+            success_label.place(relx=0.5, rely=0.1, anchor="center")
             
-            # Close success window after 2 seconds
-            success_window.after(2000, success_window.destroy)
+            # Remove success message after 2 seconds
+            self.calendar_window.after(2000, success_label.destroy)
             
         except sqlite3.Error as e:
             print(f"Database error: {e}")
@@ -291,122 +301,122 @@ class VisitDoctorView(ctk.CTkFrame):
     def show_patient_list(self):
         # Create a new window for the patient list
         patient_window = ctk.CTkToplevel(self)
-        patient_window.title("Select Patient for Visit")
-        patient_window.geometry("1000x600")
+        patient_window.title("Select Patient")
+        patient_window.geometry("800x600")
         
-        # Create table frame
-        table_frame = ctk.CTkFrame(patient_window, fg_color="white", corner_radius=10)
-        table_frame.pack(padx=20, pady=20, fill="both", expand=True)
+        # Create main frame
+        main_frame = ctk.CTkFrame(patient_window, fg_color="#E8F5F2")
+        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
-        # Create Treeview with custom style
-        style = ttk.Style()
-        style.configure(
-            "Custom.Treeview",
-            background="white",
-            foreground="#046A38",
-            fieldbackground="white",
-            rowheight=40
+        title = ctk.CTkLabel(
+            main_frame,
+            text="Patients List",
+            font=("Arial", 20, "bold"),
+            text_color="#046A38"
         )
-        style.configure(
-            "Custom.Treeview.Heading",
-            background="#A8DAB5",
-            foreground="#046A38",
-            relief="flat",
-            font=("Arial", 10, "bold")
-        )
-        
-        # Create Treeview
-        self.tree = ttk.Treeview(
-            table_frame,
-            style="Custom.Treeview",
-            columns=("Patient ID", "Name", "Surname", "Type", "Actions"),
-            show="headings"
-        )
-        
-        # Configure columns
-        self.tree.heading("Patient ID", text="Patient ID")
-        self.tree.heading("Name", text="Name")
-        self.tree.heading("Surname", text="Surname")
-        self.tree.heading("Type", text="Type")
-        self.tree.heading("Actions", text="Actions")
-        
-        # Set column widths
-        self.tree.column("Patient ID", width=100, anchor="center")
-        self.tree.column("Name", width=200, anchor="center")
-        self.tree.column("Surname", width=200, anchor="center")
-        self.tree.column("Type", width=150, anchor="center")
-        self.tree.column("Actions", width=250, anchor="center")
-        
-        # Add scrollbar
-        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
-        
-        # Pack tree and scrollbar
-        self.tree.pack(side="left", fill="both", expand=True)
-        scrollbar.pack(side="right", fill="y")
-        
-        # Load patients
-        self.load_patients()
+        title.pack(pady=10)
 
-    def load_patients(self):
+        # Create a frame for the table with scrollbar
+        table_container = ctk.CTkFrame(main_frame, fg_color="#E8F5F2")
+        table_container.pack(padx=20, pady=10, fill="both", expand=True)
+
+        # Create canvas and scrollbar
+        canvas = ctk.CTkCanvas(table_container, bg="#E8F5F2", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(table_container, orient="vertical", command=canvas.yview)
+        scrollable_frame = ctk.CTkFrame(canvas, fg_color="#E8F5F2")
+
+        # Configure canvas
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Create table frame inside scrollable frame
+        table_frame = ctk.CTkFrame(scrollable_frame, fg_color="#E8F5F2")
+        table_frame.pack(fill="both", expand=True)
+
+        for i in range(5):
+            table_frame.grid_columnconfigure(i, weight=1)
+
+        headers = ["Patient ID", "Name", "Surname", "Source", "Action"]
+        for i, header in enumerate(headers):
+            header_label = ctk.CTkLabel(
+                table_frame,
+                text=header,    
+                font=("Arial", 14, "bold"),
+                text_color="white",
+                fg_color="#73C8AE",
+                corner_radius=5,
+                height=40
+            )
+            header_label.grid(row=0, column=i, padx=2, pady=2, sticky="nsew")
+
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
-        
+
+        sources = {
+            "Seven_days_patients_ok": "7-Day OK",
+            "Follow_Up_Patients": "Follow-Up",
+            "Possible_Follow_Up_Patients": "Possible Follow-Up",
+            "OSA_Patients": "OSA"
+        }
+
+        all_patients = []
+
         try:
-            # Get all patients with their types
-            cursor.execute("""
-                SELECT p.PatientID, p.Name, p.Surname,
-                    CASE 
-                        WHEN o.PatientID IS NOT NULL THEN 'OSA'
-                        WHEN s.PatientID IS NOT NULL THEN '7 Days OK'
-                        WHEN f.PatientID IS NOT NULL THEN 'Follow Up'
-                        WHEN pf.PatientID IS NOT NULL THEN 'Possible Follow Up'
-                        ELSE 'Unknown'
-                    END as Type
-                FROM Patients p
-                LEFT JOIN OSA_Patients o ON p.PatientID = o.PatientID
-                LEFT JOIN Seven_Days_Patients_ok s ON p.PatientID = s.PatientID
-                LEFT JOIN Follow_Up_Patients f ON p.PatientID = f.PatientID
-                LEFT JOIN Possible_Follow_Up_Patients pf ON p.PatientID = pf.PatientID
-                WHERE p.DoctorID = ?
-            """, (self.doctor_id,))
+            for table, label in sources.items():
+                cursor.execute(f"SELECT PatientID, Name, Surname FROM {table}")
+                for row in cursor.fetchall():
+                    all_patients.append((row[0], row[1], row[2], label))
             
-            patients = cursor.fetchall()
-            
-            # Clear existing items
-            for item in self.tree.get_children():
-                self.tree.delete(item)
-            
-            # Insert patients with action buttons
-            for patient in patients:
-                patient_id, name, surname, patient_type = patient
-                self.tree.insert("", "end", values=(patient_id, name, surname, patient_type, ""))
-                
-                # Create buttons frame
-                buttons_frame = ctk.CTkFrame(self.tree, fg_color="transparent")
-                buttons_frame.pack()
-                
-                # Create notification button
-                notify_btn = ctk.CTkButton(
-                    buttons_frame,
-                    text="Send Notification",
-                    width=150,
+            if not all_patients:
+                no_data = ctk.CTkLabel(table_frame, text="No patients found", font=("Arial", 14), text_color="#046A38")
+                no_data.grid(row=1, column=0, columnspan=5, pady=20)
+            else:
+                for i, (patient_id, Name, Surname, origine) in enumerate(all_patients, start=1):
+                    bg_color = "#F2F2F2" if i % 2 == 0 else "white"
+
+                    # ID
+                    id_label = ctk.CTkLabel(table_frame, text=patient_id, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
+                    id_label.grid(row=i, column=0, padx=2, pady=2, sticky="nsew")
+
+                    # Nome
+                    name_label = ctk.CTkLabel(table_frame, text=Name, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
+                    name_label.grid(row=i, column=1, padx=2, pady=2, sticky="nsew")
+
+                    # Cognome
+                    surname_label = ctk.CTkLabel(table_frame, text=Surname, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
+                    surname_label.grid(row=i, column=2, padx=2, pady=2, sticky="nsew")
+
+                    # Origine
+                    source_label = ctk.CTkLabel(table_frame, text=origine, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
+                    source_label.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
+
+                    # Azione
+                    action_frame = ctk.CTkFrame(table_frame, fg_color=bg_color)
+                    action_frame.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
+
+                    notify_btn = ctk.CTkButton(
+                        action_frame,
+                        text="Notify",
+                        width=80,
                     height=30,
                     fg_color="#73C8AE",
-                    hover_color="#046A38",
                     text_color="white",
-                    command=lambda pid=patient_id, n=name, s=surname: self.send_notification(pid, n, s)
-                )
-                notify_btn.pack(side="left", padx=5)
-                
-                # Get the item ID
-                item_id = self.tree.get_children()[-1]
-                
-                # Set the buttons frame in the tree
-                self.tree.set(item_id, "Actions", buttons_frame)
+                        command=lambda pid=patient_id, name=Name, surname=Surname: self.send_notification_to_patient(pid, name, surname)
+                    )
+                    notify_btn.pack(padx=5, pady=5)
                 
         except sqlite3.Error as e:
-            print(f"Database error: {e}")
+            error_label = ctk.CTkLabel(table_frame, text=f"Error loading patients: {str(e)}", text_color="red")
+            error_label.grid(row=1, column=0, columnspan=5, pady=20)
+
         finally:
             conn.close()
 
