@@ -192,7 +192,7 @@ class DoctorMainView(ctk.CTk):
             
             
         # Create notifications view
-        from notifications_view import NotificationsView
+        from notification_view import NotificationsView
         notifications_view = NotificationsView(
             self.main_frame,
             user_id=self.user_id,

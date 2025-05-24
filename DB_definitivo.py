@@ -178,6 +178,15 @@ CREATE TABLE IF NOT EXISTS SupportMessages (
     date TEXT
 );
 """)
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS LastNotificationTime (
+    PatientID TEXT PRIMARY KEY,
+    LastNotification DATETIME,
+    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID)
+);
+""")
+
 # ========== INSERIMENTO DATI ==========
 
 # Doctors

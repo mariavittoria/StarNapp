@@ -26,52 +26,160 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
         table_frame = ctk.CTkFrame(self, fg_color="white", corner_radius=10)
         table_frame.pack(padx=20, pady=20, fill="both", expand=True)
 
-        # Create Treeview with custom style
-        style = ttk.Style()
-        style.configure(
-            "Custom.Treeview",
-            background="white",
-            foreground="#046A38",
-            fieldbackground="white",
-            rowheight=30
+        # Create canvas and scrollbar
+        canvas = ctk.CTkCanvas(table_frame, bg="white", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ctk.CTkFrame(canvas, fg_color="transparent")
+        
+        # Configure canvas
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
-        style.configure(
-            "Custom.Treeview.Heading",
-            background="#A8DAB5",  # Light green background for headers
-            foreground="#046A38",  # Dark green text
-            relief="flat",
-            font=("Arial", 10, "bold")
-        )
-        style.map(
-            "Custom.Treeview.Heading",
-            background=[("active", "#A8DAB5")]  # Keep the same color when hovering
-        )
-
-        # Create Treeview
-        self.tree = ttk.Treeview(
-            table_frame,
-            style="Custom.Treeview",
-            columns=("Patient ID", "Name", "Surname"),
-            show="headings"
-        )
-
-        # Configure columns
-        self.tree.heading("Patient ID", text="Patient ID")
-        self.tree.heading("Name", text="Name")
-        self.tree.heading("Surname", text="Surname")
-
-        # Set column widths and center text
-        self.tree.column("Patient ID", width=100, anchor="center")
-        self.tree.column("Name", width=150, anchor="center")
-        self.tree.column("Surname", width=150, anchor="center")
-
-        # Add scrollbar
-        scrollbar = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscrollcommand=scrollbar.set)
-
-        # Pack tree and scrollbar
-        self.tree.pack(side="left", fill="both", expand=True)
+        
+        # Create window in canvas
+        canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        
+        # Configure canvas to expand with window
+        def configure_canvas(event):
+            canvas.itemconfig(canvas_window, width=event.width)
+        canvas.bind("<Configure>", configure_canvas)
+        
+        # Configure scrollbar
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
+
+        # Create table frame inside scrollable frame
+        self.table_frame = ctk.CTkFrame(scrollable_frame, fg_color="transparent")
+        self.table_frame.pack(fill="both", expand=True)
+        
+        # Configure grid
+        for i in range(5):
+            self.table_frame.grid_columnconfigure(i, weight=1)
+
+        # Headers
+        headers = ["Patient ID", "Name", "Surname", "Says since last episode", "Details"]
+        for i, header in enumerate(headers):
+            header_label = ctk.CTkLabel(
+                self.table_frame,
+                text=header,    
+                font=("Arial", 14, "bold"),
+                text_color="white",
+                fg_color="#73C8AE",
+                corner_radius=5,
+                height=40
+            )
+            header_label.grid(row=0, column=i, padx=2, pady=2, sticky="nsew")
+
+        # Load patients
+        self.load_patients(doctor_id)
+
+    def load_patients(self, doctor_id):
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("""
+                SELECT o.PatientID, o.Name, o.Surname, o.Days_since_last_OSA
+                FROM Possible_Follow_Up_Patients o
+                JOIN Patients p ON o.PatientID = p.PatientID
+                ORDER BY o.Name, o.Surname
+            """, (doctor_id,))
+            
+            patients = cursor.fetchall()
+            
+            if not patients:
+                no_data_label = ctk.CTkLabel(
+                    self.table_frame,
+                    text="No possible follow up patients found",
+                    text_color="#046A38",
+                    font=("Arial", 14)
+                )
+                no_data_label.grid(row=1, column=0, columnspan=5, pady=20)
+                return
+            
+            # Display patients
+            for i, (patient_id, name, surname, days) in enumerate(patients, start=1):
+                # Alternate background color
+                bg_color = "#F2F2F2" if i % 2 == 0 else "white"
+                
+                # Patient ID
+                id_label = ctk.CTkLabel(
+                    self.table_frame,
+                    text=patient_id,
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                id_label.grid(row=i, column=0, padx=2, pady=2, sticky="nsew")
+                
+                # Name
+                name_label = ctk.CTkLabel(
+                    self.table_frame,
+                    text=name,
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                name_label.grid(row=i, column=1, padx=2, pady=2, sticky="nsew")
+                
+                # Surname
+                surname_label = ctk.CTkLabel(
+                    self.table_frame,
+                    text=surname,
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                surname_label.grid(row=i, column=2, padx=2, pady=2, sticky="nsew")
+                
+                # Days since last OSA
+                days_label = ctk.CTkLabel(
+                    self.table_frame,
+                    text=str(days) if days is not None else "-",
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                days_label.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
+                
+                # Actions frame
+                action_frame = ctk.CTkFrame(self.table_frame, fg_color=bg_color)
+                action_frame.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
+                
+                # View Details button
+                details_btn = ctk.CTkButton(
+                    action_frame,
+                    text="View Details",
+                    width=100,
+                    height=30,
+                    fg_color="#73C8AE",
+                    hover_color="#046A38",
+                    text_color="white",
+                    command=lambda pid=patient_id, n=name, s=surname: self.show_patient_details(pid, n, s)
+                )
+                details_btn.pack(padx=5, pady=5)
+                
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                self.table_frame,
+                text=f"Error loading patients: {str(e)}",
+                text_color="red"
+            )
+            error_label.grid(row=1, column=0, columnspan=5, pady=20)
+        finally:
+            conn.close()
 
         # Load data
         self.load_patients(doctor_id)

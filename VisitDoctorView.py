@@ -298,49 +298,166 @@ class VisitDoctorView(ctk.CTkFrame):
         finally:
             conn.close()
 
+    def send_notification_to_patient(self, patient_id, name, surname):
+        # Check if 24 hours have passed since last notification
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        
+        try:
+            # Get last notification time
+            cursor.execute("""
+                SELECT LastNotification 
+                FROM LastNotificationTime 
+                WHERE PatientID = ?
+            """, (patient_id,))
+            
+            result = cursor.fetchone()
+            current_time = datetime.now()
+            
+            if result:
+                last_notification = datetime.strptime(result[0], "%Y-%m-%d %H:%M:%S")
+                time_diff = current_time - last_notification
+                
+                # If less than 24 hours have passed, show error and return
+                if time_diff.total_seconds() < 24 * 3600:
+                    error_window = ctk.CTkToplevel(self)
+                    error_window.title("Error")
+                    error_window.geometry("300x150")
+                    
+                    remaining_hours = int((24 * 3600 - time_diff.total_seconds()) / 3600)
+                    error_label = ctk.CTkLabel(
+                        error_window,
+                        text=f"Please wait {remaining_hours} hours before sending another notification.",
+                        font=("Arial", 14),
+                        text_color="red"
+                    )
+                    error_label.pack(pady=20)
+                    
+                    # Close error window after 2 seconds
+                    error_window.after(2000, error_window.destroy)
+                    return
+            
+            # Create notification for the patient
+            message = "The doctor requested a visit with you"
+            timestamp = current_time.strftime("%Y-%m-%d %H:%M:%S")
+            
+            cursor.execute("""
+                INSERT INTO Notifications (PatientID, PatientName, Type, Message, Timestamp)
+                VALUES (?, ?, ?, ?, ?)
+            """, (patient_id, f"{name} {surname}", "visit_request", message, timestamp))
+            
+            # Update or insert last notification time
+            cursor.execute("""
+                INSERT OR REPLACE INTO LastNotificationTime (PatientID, LastNotification)
+                VALUES (?, ?)
+            """, (patient_id, timestamp))
+            
+            conn.commit()
+            
+            # Show success message
+            success_window = ctk.CTkToplevel(self)
+            success_window.title("Success")
+            success_window.geometry("300x150")
+            
+            success_label = ctk.CTkLabel(
+                success_window,
+                text="Notification sent successfully!",
+                font=("Arial", 14),
+                text_color="#046A38"
+            )
+            success_label.pack(pady=20)
+            
+            # Close success window after 2 seconds
+            success_window.after(2000, success_window.destroy)
+            
+            # Update button appearance
+            self.update_notify_button(patient_id)
+            
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
+
+    def update_notify_button(self, patient_id):
+        # Find the notify button for this patient and update its appearance
+        for widget in self.patient_window.winfo_children():
+            if isinstance(widget, ctk.CTkFrame):  # This is the table frame
+                for child in widget.winfo_children():
+                    if isinstance(child, ctk.CTkFrame):  # This is a row frame
+                        for button in child.winfo_children():
+                            if isinstance(button, ctk.CTkButton) and button.cget("text") == "Notify":
+                                # Check if button should be disabled
+                                conn = sqlite3.connect("Database_proj.db")
+                                cursor = conn.cursor()
+                                try:
+                                    cursor.execute("""
+                                        SELECT LastNotification 
+                                        FROM LastNotificationTime 
+                                        WHERE PatientID = ?
+                                    """, (patient_id,))
+                                    
+                                    result = cursor.fetchone()
+                                    if result:
+                                        last_notification = datetime.strptime(result[0], "%Y-%m-%d %H:%M:%S")
+                                        time_diff = datetime.now() - last_notification
+                                        
+                                        if time_diff.total_seconds() < 24 * 3600:
+                                            button.configure(
+                                                fg_color="#CCCCCC",  # Grey color
+                                                hover_color="#999999",
+                                                state="disabled"
+                                            )
+                                        else:
+                                            button.configure(
+                                                fg_color="#73C8AE",
+                                                hover_color="#046A38",
+                                                state="normal"
+                                            )
+                                finally:
+                                    conn.close()
+                                return
+
     def show_patient_list(self):
         # Create a new window for the patient list
-        patient_window = ctk.CTkToplevel(self)
-        patient_window.title("Select Patient")
-        patient_window.geometry("800x600")
+        self.patient_window = ctk.CTkToplevel(self)
+        self.patient_window.title("Fix an appointment")
+        self.patient_window.geometry("1000x600")
         
         # Create main frame
-        main_frame = ctk.CTkFrame(patient_window, fg_color="#E8F5F2")
+        main_frame = ctk.CTkFrame(self.patient_window, fg_color="white")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
-        title = ctk.CTkLabel(
-            main_frame,
-            text="Patients List",
-            font=("Arial", 20, "bold"),
-            text_color="#046A38"
-        )
-        title.pack(pady=10)
-
-        # Create a frame for the table with scrollbar
-        table_container = ctk.CTkFrame(main_frame, fg_color="#E8F5F2")
-        table_container.pack(padx=20, pady=10, fill="both", expand=True)
-
         # Create canvas and scrollbar
-        canvas = ctk.CTkCanvas(table_container, bg="#E8F5F2", highlightthickness=0)
-        scrollbar = ttk.Scrollbar(table_container, orient="vertical", command=canvas.yview)
-        scrollable_frame = ctk.CTkFrame(canvas, fg_color="#E8F5F2")
-
+        canvas = ctk.CTkCanvas(main_frame, bg="white", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(main_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ctk.CTkFrame(canvas, fg_color="transparent")
+        
         # Configure canvas
         scrollable_frame.bind(
             "<Configure>",
             lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
         )
-        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        
+        # Create window in canvas
+        canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        
+        # Configure canvas to expand with window
+        def configure_canvas(event):
+            canvas.itemconfig(canvas_window, width=event.width)
+        canvas.bind("<Configure>", configure_canvas)
+        
+        # Configure scrollbar
         canvas.configure(yscrollcommand=scrollbar.set)
-
+        
         # Pack canvas and scrollbar
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
-
+        
         # Create table frame inside scrollable frame
-        table_frame = ctk.CTkFrame(scrollable_frame, fg_color="#E8F5F2")
+        table_frame = ctk.CTkFrame(scrollable_frame, fg_color="transparent")
         table_frame.pack(fill="both", expand=True)
-
+        
+        # Configure grid
         for i in range(5):
             table_frame.grid_columnconfigure(i, weight=1)
 
@@ -368,50 +485,108 @@ class VisitDoctorView(ctk.CTkFrame):
         }
 
         all_patients = []
-
+        
         try:
-            for table, label in sources.items():
-                cursor.execute(f"SELECT PatientID, Name, Surname FROM {table}")
-                for row in cursor.fetchall():
-                    all_patients.append((row[0], row[1], row[2], label))
+            # Get patients from each source
+            for source, display_name in sources.items():
+                cursor.execute(f"SELECT PatientID, Name, Surname FROM {source}")
+                patients = cursor.fetchall()
+                for patient in patients:
+                    all_patients.append((patient[0], patient[1], patient[2], display_name))
             
-            if not all_patients:
-                no_data = ctk.CTkLabel(table_frame, text="No patients found", font=("Arial", 14), text_color="#046A38")
-                no_data.grid(row=1, column=0, columnspan=5, pady=20)
-            else:
-                for i, (patient_id, Name, Surname, origine) in enumerate(all_patients, start=1):
-                    bg_color = "#F2F2F2" if i % 2 == 0 else "white"
+            # Sort patients by name
+            all_patients.sort(key=lambda x: (x[1], x[2]))
+            
+            # Display patients
+            for i, (patient_id, Name, Surname, source) in enumerate(all_patients, start=1):
+                # Alternate background color
+                bg_color = "#F2F2F2" if i % 2 == 0 else "white"
+                
+                # Patient ID
+                id_label = ctk.CTkLabel(
+                    table_frame,
+                    text=patient_id,
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                id_label.grid(row=i, column=0, padx=2, pady=2, sticky="nsew")
+                
+                # Name
+                name_label = ctk.CTkLabel(
+                    table_frame,
+                    text=Name,
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                name_label.grid(row=i, column=1, padx=2, pady=2, sticky="nsew")
+                
+                # Surname
+                surname_label = ctk.CTkLabel(
+                    table_frame,
+                    text=Surname,
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                surname_label.grid(row=i, column=2, padx=2, pady=2, sticky="nsew")
+                
+                # Source
+                source_label = ctk.CTkLabel(
+                    table_frame,
+                    text=source,
+                    font=("Arial", 12),
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                source_label.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
+                
+                # Action buttons frame
+                action_frame = ctk.CTkFrame(table_frame, fg_color=bg_color)
+                action_frame.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
+                
+                # Check if notification is on cooldown
+                cursor.execute("""
+                    SELECT LastNotification 
+                    FROM LastNotificationTime 
+                    WHERE PatientID = ?
+                """, (patient_id,))
+                
+                result = cursor.fetchone()
+                button_enabled = True
+                button_color = "#73C8AE"
+                hover_color = "#046A38"
+                
+                if result:
+                    last_notification = datetime.strptime(result[0], "%Y-%m-%d %H:%M:%S")
+                    time_diff = datetime.now() - last_notification
+                    
+                    if time_diff.total_seconds() < 24 * 3600:
+                        button_enabled = False
+                        button_color = "#CCCCCC"
+                        hover_color = "#999999"
 
-                    # ID
-                    id_label = ctk.CTkLabel(table_frame, text=patient_id, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
-                    id_label.grid(row=i, column=0, padx=2, pady=2, sticky="nsew")
-
-                    # Nome
-                    name_label = ctk.CTkLabel(table_frame, text=Name, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
-                    name_label.grid(row=i, column=1, padx=2, pady=2, sticky="nsew")
-
-                    # Cognome
-                    surname_label = ctk.CTkLabel(table_frame, text=Surname, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
-                    surname_label.grid(row=i, column=2, padx=2, pady=2, sticky="nsew")
-
-                    # Origine
-                    source_label = ctk.CTkLabel(table_frame, text=origine, font=("Arial", 12), text_color="#046A38", fg_color=bg_color)
-                    source_label.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
-
-                    # Azione
-                    action_frame = ctk.CTkFrame(table_frame, fg_color=bg_color)
-                    action_frame.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
-
-                    notify_btn = ctk.CTkButton(
-                        action_frame,
-                        text="Notify",
-                        width=80,
+                notify_btn = ctk.CTkButton(
+                    action_frame,
+                    text="Notify",
+                    width=80,
                     height=30,
-                    fg_color="#73C8AE",
+                    fg_color=button_color,
+                    hover_color=hover_color,
                     text_color="white",
-                        command=lambda pid=patient_id, name=Name, surname=Surname: self.send_notification_to_patient(pid, name, surname)
-                    )
-                    notify_btn.pack(padx=5, pady=5)
+                    state="normal" if button_enabled else "disabled",
+                    command=lambda pid=patient_id, name=Name, surname=Surname: self.send_notification_to_patient(pid, name, surname)
+                )
+                notify_btn.pack(padx=5, pady=5)
                 
         except sqlite3.Error as e:
             error_label = ctk.CTkLabel(table_frame, text=f"Error loading patients: {str(e)}", text_color="red")
@@ -420,39 +595,3 @@ class VisitDoctorView(ctk.CTkFrame):
         finally:
             conn.close()
 
-    def send_notification(self, patient_id, name, surname):
-        # Create notification for the patient
-        message = "The doctor requested a visit with you"
-        timestamp = datetime.now().isoformat()
-        
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        
-        try:
-            cursor.execute("""
-                INSERT INTO Notifications (PatientID, PatientName, Type, Message, Timestamp)
-                VALUES (?, ?, ?, ?, ?)
-            """, (patient_id, f"{name} {surname}", "visit_request", message, timestamp))
-            
-            conn.commit()
-            
-            # Show success message
-            success_window = ctk.CTkToplevel(self)
-            success_window.title("Success")
-            success_window.geometry("300x150")
-            
-            success_label = ctk.CTkLabel(
-                success_window,
-                text="Notification sent successfully!",
-                font=("Arial", 14),
-                text_color="#046A38"
-            )
-            success_label.pack(pady=20)
-            
-            # Close success window after 2 seconds
-            success_window.after(2000, success_window.destroy)
-            
-        except sqlite3.Error as e:
-            print(f"Database error: {e}")
-        finally:
-            conn.close()

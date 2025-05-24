@@ -66,16 +66,16 @@ class SpO2ViewDoctor(ctk.CTkFrame):
         dates = [datetime.datetime.strptime(date_str, "%Y-%m-%d").date() for date_str, value in data]
         values = [value for date_str, value in data]
 
-        fig, ax = plt.subplots(figsize=(8, 3.5), dpi=100)
-        ax.plot(dates, values, marker="o", markersize=5, linewidth=2, color="#3366cc")
-        ax.set_title("SpO₂ values over time", fontsize=13, fontweight="bold")
-        ax.set_xlabel("Date", fontsize=10)
-        ax.set_ylabel("SpO₂", fontsize=10)
-        ax.set_ylim(min(values) - 0.5, max(values) + 0.5)
-        ax.set_xticks(dates)
-        ax.grid(True, linestyle='--', linewidth=0.4, color='lightgray')
-        ax.xaxis.set_major_formatter(mdates.DateFormatter('%d-%m'))
-        fig.autofmt_xdate(rotation=30)
+        fig, ax = plt.subplots(figsize=(10, 5))  # Reduced height
+        dates = [datetime.datetime.strptime(row[0], "%Y-%m-%d") for row in data]
+        values = [row[1] for row in data]
+
+        ax.plot(dates, values, marker='o', linestyle='-', color='#046A38')
+        ax.set_xlabel("Date", color="#046A38")
+        ax.set_ylabel("SpO2 Value (%)", color="#046A38")
+        ax.grid(True, linestyle='--', alpha=0.7)
+        ax.set_facecolor("#E8F5F2")
+        fig.patch.set_facecolor("#E8F5F2")
 
         for x, y in zip(dates, values):
             ax.text(x, y + 0.2, f"{y:.1f}", ha='center', fontsize=8, color='black')
