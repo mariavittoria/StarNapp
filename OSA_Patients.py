@@ -535,8 +535,6 @@ class OSAPatientsView(ctk.CTkFrame):
                 therapy_frame,
                 text="Save Therapy",
                 width=200,
-                fg_color="#73C8AE",
-                hover_color="#046A38",
                 text_color="white",
                 command=lambda: self.save_therapy(patient_id)
             )

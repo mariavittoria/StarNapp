@@ -4,6 +4,7 @@ from PIL import Image
 import sqlite3
 from tkinter import ttk
 from patient_indexes_view import PatientIndexes
+from datetime import datetime
 
 class PossibleFollowUpPatientsView(ctk.CTkFrame):
     def __init__(self, parent_frame, doctor_id):
@@ -86,6 +87,7 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
                 SELECT o.PatientID, o.Name, o.Surname, o.Days_since_last_OSA
                 FROM Possible_Follow_Up_Patients o
                 JOIN Patients p ON o.PatientID = p.PatientID
+                WHERE p.DoctorID = ?
                 ORDER BY o.Name, o.Surname
             """, (doctor_id,))
             
@@ -181,192 +183,695 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
         finally:
             conn.close()
 
-        # Load data
-        self.load_patients(doctor_id)
-
-    def load_patients(self, doctor_id):
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        
-        try:
-            cursor.execute("""
-                SELECT PatientID, Name, Surname
-                FROM Possible_Follow_Up_Patients
-                ORDER BY Date DESC
-            """)
+    def show_patient_details(self, patient_id, name, surname):
+            # Create a new window for patient options
+            self.options_window = ctk.CTkToplevel()
+            self.options_window.title(f"Patient Details - {name} {surname}")
+            self.options_window.geometry("800x500")
             
-            patients = cursor.fetchall()
+            # Center the window
+            w = 800
+            h = 500
+            x = (self.options_window.winfo_screenwidth() // 2) - (w // 2)
+            y = (self.options_window.winfo_screenheight() // 2) - (h // 2)
+            self.options_window.geometry(f"{w}x{h}+{x}+{y}")
             
-            # Clear existing items
-            for item in self.tree.get_children():
-                self.tree.delete(item)
+            # Create main frame
+            self.main_frame = ctk.CTkFrame(self.options_window, corner_radius=10, fg_color="#E8F5F2")
+            self.main_frame.pack(fill="both", expand=True, padx=20, pady=20)
             
-            # Insert patients
-            for patient in patients:
-                self.tree.insert("", "end", values=patient)
-                
-        except sqlite3.Error as e:
-            print(f"Database error: {e}")
-        finally:
-            conn.close()
+            self.show_main_menu(patient_id, name, surname)
 
-    def on_double_click(self, event):
-        # Get selected item
-        item = self.tree.selection()[0]
-        values = self.tree.item(item)['values']
-        
-        # Extract patient info
-        self.patient_id = values[0]  # Assuming PatientID is the first column
-        self.patient_name = f"{values[1]} {values[2]}"  # Assuming Name and Surname are the second and third columns
-        
-        # Create a new window for patient options
-        self.options_window = ctk.CTkToplevel()
-        self.options_window.title(f"Patient Options - {self.patient_name}")
-        self.options_window.geometry("800x500")
-        
-        # Center the window
-        w = 800
-        h = 500
-        x = (self.options_window.winfo_screenwidth() // 2) - (w // 2)
-        y = (self.options_window.winfo_screenheight() // 2) - (h // 2)
-        self.options_window.geometry(f"{w}x{h}+{x}+{y}")
-        
-        # Create main frame
-        self.main_frame = ctk.CTkFrame(self.options_window, corner_radius=10, fg_color="#E8F5F2")
-        self.main_frame.pack(fill="both", expand=True, padx=20, pady=20)
-        
-        self.show_main_menu()
-
-    def get_possible_follow_up_patients(self):
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM Possible_Follow_Up_Patients")
-        rows = cursor.fetchall()
-        column_names = [description[0] for description in cursor.description]
-        conn.close()
-        return column_names, rows
-
-    def show_main_menu(self):
+    def show_main_menu(self, patient_id, name, surname):
         # Clear main frame
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-        
-        # PATIENT TRENDS
-        title = ctk.CTkLabel(self.main_frame, text="Patient Trends", font=("Arial", 24, "bold"), text_color="#046A38")
-        title.pack(pady=(40, 20))
-        
-        # Add trend buttons frame
-        trends_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        trends_frame.pack(pady=20)
-        
-        # Trend buttons - Green theme
+
+        # Title
+        title = ctk.CTkLabel(
+            self.main_frame,
+            text=f"Patient: {name} {surname}",
+            font=("Arial", 24, "bold"),
+            text_color="#046A38"
+        )
+        title.pack(pady=30)
+
+        # Create a frame for buttons to center them
+        button_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        button_frame.pack(pady=20)
+
         # AHI button
         ahi_button = ctk.CTkButton(
-            trends_frame,
-            text="AHI trend",
+            button_frame,
+            text="AHI",
             width=200,
-            fg_color="#73C8AE",  # Light green
-            hover_color="#046A38",  # Dark green
+            fg_color="#73C8AE",
+            hover_color="#046A38",
             text_color="white",
-            command=self.open_ahi
+            command=lambda: self.open_ahi(patient_id, name, surname)
         )
         ahi_button.pack(pady=15)
 
         # ODI button
         odi_button = ctk.CTkButton(
-            trends_frame,
-            text="ODI trend",
+            button_frame,
+            text="ODI",
             width=200,
-            fg_color="#73C8AE",  # Light green
-            hover_color="#046A38",  # Dark green
+            fg_color="#73C8AE",
+            hover_color="#046A38",
             text_color="white",
-            command=self.open_odi
+            command=lambda: self.open_odi(patient_id, name, surname)
         )
         odi_button.pack(pady=15)
 
         # SpO2 button
         spo2_button = ctk.CTkButton(
-            trends_frame,
-            text="SpO₂ trend",
+            button_frame,
+            text="SpO₂",
             width=200,
-            fg_color="#73C8AE",  # Light green
-            hover_color="#046A38",  # Dark green
+            fg_color="#73C8AE",
+            hover_color="#046A38",
             text_color="white",
-            command=self.open_spo2
+            command=lambda: self.open_spo2(patient_id, name, surname)
         )
         spo2_button.pack(pady=15)
-        
-        # Add action buttons frame
+
+        # Actions frame
         actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        actions_frame.pack(pady=(40, 20))
-        
-        # Action buttons - Light blue theme
-        visit_btn = ctk.CTkButton(
+        actions_frame.pack(pady=30)
+
+        # Plan a Visit button
+        self.visit_button = ctk.CTkButton(
             actions_frame,
-            text="Plan a Visit with the Patient",
-            width=250,
-            fg_color="#4A90E2",  # Light blue
-            hover_color="#2C5282",  # Darker blue
+            text="Plan a Visit",
+            width=200,
+            fg_color="#73C8AE",
+            hover_color="#046A38",
             text_color="white",
-            command=lambda: self.plan_visit(self.patient_id, self.patient_name)
+            command=lambda: self.plan_visit(patient_id, name, surname)
         )
-        visit_btn.pack(pady=15)
-        
-        therapy_btn = ctk.CTkButton(
+        self.visit_button.pack(pady=15)
+
+        # Check if button should be disabled
+        self.check_visit_button_state(patient_id)
+
+        # View/Modify Therapy button
+        therapy_button = ctk.CTkButton(
             actions_frame,
             text="View/Modify Therapy",
-            width=250,
-            fg_color="#4A90E2",  # Light blue
-            hover_color="#2C5282",  # Darker blue
+            width=200,
+            fg_color="#73C8AE",
+            hover_color="#046A38",
             text_color="white",
-            command=lambda: self.view_therapy(self.patient_id)
+            command=lambda: self.view_therapy(patient_id, name, surname)
         )
-        therapy_btn.pack(pady=15)
+        therapy_button.pack(pady=15)
 
-    def open_ahi(self):
-        # Clear main frame
+        # View Questionnaire button
+        questionnaire_button = ctk.CTkButton(
+            actions_frame,
+            text="View Patient Questionnaire",
+            width=200,
+            fg_color="#73C8AE",
+            hover_color="#046A38",
+            text_color="white",
+            command=lambda: self.view_questionnaire(patient_id, name, surname)
+        )
+        questionnaire_button.pack(pady=15)
+
+        # Inserisci in follow up  
+        followup_button = ctk.CTkButton(
+            actions_frame,
+            text="Insert in Follow Up",
+            width=200,
+            fg_color="#73C8AE",
+            hover_color="#046A38",
+            text_color="white",
+            command=lambda: self.insert_in_follow_up(patient_id, name, surname)
+        )
+        followup_button.pack(pady=15)
+
+    def check_visit_button_state(self, patient_id):
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT COUNT(*) FROM Notifications 
+                WHERE PatientID = ? AND Type = 'visit' 
+                AND datetime(CreationDate) > datetime('now', '-24 hours')
+            """, (patient_id,))
+            count = cursor.fetchone()[0]
+            if count > 0:
+                self.visit_button.configure(
+                    state="disabled",
+                    fg_color="#CCCCCC",
+                    hover_color="#CCCCCC"
+                )
+        except sqlite3.Error as e:
+            print(f"Error checking notification state: {e}")
+        finally:
+            conn.close()
+
+    def plan_visit(self, patient_id, name, surname):
+        # Import VisitDoctorView
+        from VisitDoctorView import VisitDoctorView
+        
+        # Create a temporary instance of VisitDoctorView to access the send_notification_to_patient method
+        temp_view = VisitDoctorView(None, None)  # We don't need the actual parent frame or doctor_id for this
+        
+        # Call the send_notification_to_patient method
+        temp_view.send_notification_to_patient(patient_id, f"{name} {surname}")
+        
+        # Disable the button
+        self.visit_button.configure(
+            state="disabled",
+            fg_color="grey",
+            hover_color="grey"
+        )
+        # Show success message
+        success_label = ctk.CTkLabel(
+            self.main_frame,
+            text="Visit notification sent successfully!",
+            font=("Arial", 16),
+            text_color="#046A38"
+        )
+        success_label.pack(pady=20)
+
+    def open_ahi(self, patient_id, name, surname):
+        from ahi_view_paziente import AHIViewPaziente
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-            
-        # Create AHI view
-        from ahi_view_doctor import AHIViewDoctor
-        ahi_view = AHIViewDoctor(
+        ahi_view = AHIViewPaziente(
             self.main_frame,
-            patient_id=self.patient_id,
-            patient_name=self.patient_name,
-            go_back_callback=self.show_main_menu
+            patient_id=patient_id,
+            patient_name=f"{name} {surname}",
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
         )
         ahi_view.pack(fill="both", expand=True)
 
-    def open_odi(self):
-        # Clear main frame
+    def open_odi(self, patient_id, name, surname):
+        from odi_view_paziente import ODIViewPaziente
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-            
-        # Create ODI view
-        from odi_view_doctor import ODIViewDoctor
-        odi_view = ODIViewDoctor(
+        odi_view = ODIViewPaziente(
             self.main_frame,
-            patient_id=self.patient_id,
-            patient_name=self.patient_name,
-            go_back_callback=self.show_main_menu
+            patient_id=patient_id,
+            patient_name=f"{name} {surname}",
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
         )
         odi_view.pack(fill="both", expand=True)
 
-    def open_spo2(self):
+    def open_spo2(self, patient_id, name, surname):
+        from spo2_view_paziente import SpO2ViewPaziente
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+        spo2_view = SpO2ViewPaziente(
+            self.main_frame,
+            patient_id=patient_id,
+            patient_name=f"{name} {surname}",
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
+        )
+        spo2_view.pack(fill="both", expand=True)
+
+    def view_therapy(self, patient_id, name, surname):
         # Clear main frame
         for widget in self.main_frame.winfo_children():
             widget.destroy()
-            
-        # Create SpO2 view
-        from spo2_view_doctor import SpO2ViewDoctor
-        spo2_view = SpO2ViewDoctor(
+
+        # Add back button
+        back_btn = ctk.CTkButton(
             self.main_frame,
-            patient_id=self.patient_id,
-            patient_name=self.patient_name,
-            go_back_callback=self.show_main_menu
+            text="← Back",
+            width=100,
+            
+            text_color="white",
+            command=lambda: self.show_main_menu(patient_id, name, surname)
         )
-        spo2_view.pack(fill="both", expand=True)
+        back_btn.pack(anchor="w", padx=20, pady=20)
+
+        # Add title
+        title = ctk.CTkLabel(
+            self.main_frame,
+            text="Patient Therapy",
+            font=("Arial", 24, "bold"),
+            text_color="#046A38"
+        )
+        title.pack(pady=20)
+
+        # Create main content frame
+        content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Create table frame for drugs
+        table_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10)
+        table_frame.pack(fill="x", pady=(0, 20))
+
+        # Table headers
+        headers = ["Drug Information", "Start Date", "End Date"]
+        for i, header in enumerate(headers):
+            label = ctk.CTkLabel(
+                table_frame,
+                text=header,
+                font=("Arial", 14, "bold"),
+                text_color="white",
+                fg_color="#73C8AE",
+                corner_radius=5,
+                height=40
+            )
+            label.grid(row=0, column=i, padx=20, pady=10, sticky="w")
+
+        # Get drugs from database
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+
+        self.drug_entries = []
+
+        try:
+            cursor.execute("""
+                SELECT Note, StartDate, EndDate
+                FROM Drugs
+                WHERE PatientID = ?
+                ORDER BY StartDate DESC
+            """, (patient_id,))
+        
+            drugs = cursor.fetchall()
+
+            if not drugs:
+                no_drugs_label = ctk.CTkLabel(
+                    table_frame,
+                    text="No medications found",
+                    font=("Arial", 14),
+                    text_color="#046A38"
+                )
+                no_drugs_label.grid(row=1, column=0, columnspan=3, pady=20)
+            else:
+                for i, (note, start_date, end_date) in enumerate(drugs, 1):
+                    note_entry = ctk.CTkEntry(table_frame, width=300)
+                    note_entry.insert(0, note)
+                    note_entry.grid(row=i, column=0, padx=20, pady=5, sticky="w")
+
+                    start_entry = ctk.CTkEntry(table_frame, width=150)
+                    start_entry.insert(0, start_date)
+                    start_entry.grid(row=i, column=1, padx=20, pady=5, sticky="w")
+
+                    end_entry = ctk.CTkEntry(table_frame, width=150)
+                    end_entry.insert(0, end_date)
+                    end_entry.grid(row=i, column=2, padx=20, pady=5, sticky="w")
+
+                    self.drug_entries.append((note_entry, start_entry, end_entry))
+
+            # Add new drug button
+            add_drug_btn = ctk.CTkButton(
+                table_frame,
+                text="+ Add New Drug",
+                fg_color="#73C8AE",
+                hover_color="#046A38",
+                text_color="white",
+                command=lambda: self.add_new_drug_row(table_frame)
+            )
+            add_drug_btn.grid(row=len(drugs) + 1, column=0, columnspan=3, pady=10)
+
+        # Save button for drugs
+            drug_save_btn = ctk.CTkButton(
+                content_frame,
+                text="Save Drugs",
+                fg_color="#73C8AE",
+                hover_color="#73C8AE",
+                text_color="white",
+                width=200,
+                command=lambda: self.save_drugs(patient_id)
+            )
+            drug_save_btn.pack(pady=10)
+
+        # Get current therapy
+            cursor.execute("""
+                SELECT ID, Note
+                FROM Therapy
+                WHERE PatientID = ?
+            """, (patient_id,))
+            
+            current_therapy = cursor.fetchone()
+            self.current_therapy_id = current_therapy[0] if current_therapy else None
+
+        # Create therapy input frame
+            therapy_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10)
+            therapy_frame.pack(fill="x", pady=20)
+
+            therapy_label = ctk.CTkLabel(
+                therapy_frame,
+                text="Current Therapy:",
+                font=("Arial", 14, "bold"),
+                text_color="#046A38"
+            )
+            therapy_label.pack(anchor="w", padx=20, pady=(20, 10))
+
+            # Therapy text input
+            self.therapy_text = ctk.CTkTextbox(
+                therapy_frame,
+                height=100,
+                width=600,
+                font=("Arial", 12)
+            )
+            self.therapy_text.pack(padx=20, pady=10)
+
+            if current_therapy:
+                self.therapy_text.insert("1.0", current_therapy[1])
+
+            # Save button for therapy
+            save_btn = ctk.CTkButton(
+                therapy_frame,
+                text="Save Therapy",
+                width=200,
+                fg_color="#73C8AE",
+                hover_color="#046A38",
+                text_color="white",
+                command=lambda: self.save_therapy(patient_id)
+            )
+            save_btn.pack(pady=20)
+
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                content_frame,
+                text=f"Error loading data: {str(e)}",
+                text_color="red"
+            )
+            error_label.pack(pady=20)
+        finally:
+            conn.close()
+
+    def add_new_drug_row(self, table_frame):
+        # Get the next row number
+        next_row = len(self.drug_entries) + 1
+        
+        # Create new entries
+        note_entry = ctk.CTkEntry(table_frame, width=300)
+        note_entry.grid(row=next_row, column=0, padx=20, pady=5, sticky="w")
+        
+        start_entry = ctk.CTkEntry(table_frame, width=150)
+        start_entry.insert(0, datetime.date.today().strftime("%Y-%m-%d"))
+        start_entry.grid(row=next_row, column=1, padx=20, pady=5, sticky="w")
+        
+        end_entry = ctk.CTkEntry(table_frame, width=150)
+        end_entry.grid(row=next_row, column=2, padx=20, pady=5, sticky="w")
+        
+        # Add to entries list
+        self.drug_entries.append((note_entry, start_entry, end_entry))
+        
+        # Move the "Add New Drug" button down
+        for widget in table_frame.winfo_children():
+            if isinstance(widget, ctk.CTkButton) and widget.cget("text") == "+ Add New Drug":
+                widget.grid(row=next_row + 1, column=0, columnspan=3, pady=10)
+
+    def save_drugs(self, patient_id):
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("DELETE FROM Drugs WHERE PatientID = ?", (patient_id,))
+            
+            for note_entry, start_entry, end_entry in self.drug_entries:
+                note = note_entry.get()
+                start = start_entry.get()
+                end = end_entry.get()
+                cursor.execute("""
+                    INSERT INTO Drugs (PatientID, Note, StartDate, EndDate)
+                    VALUES (?, ?, ?, ?)
+                """, (patient_id, note, start, end))
+
+            conn.commit()
+            success_label = ctk.CTkLabel(
+                self.main_frame,
+                text="Drugs saved successfully!",
+                text_color="#046A38",
+                font=("Arial", 14)
+            )
+            success_label.pack(pady=10)
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                self.main_frame,
+                text=f"Error saving drugs: {e}",
+                text_color="red"
+            )
+            error_label.pack(pady=10)
+        finally:
+            conn.close()
+
+    def save_therapy(self, patient_id):
+        new_note = self.therapy_text.get("1.0", "end-1c")
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            if self.current_therapy_id:
+                cursor.execute("""
+                    UPDATE Therapy SET Note = ? WHERE ID = ?
+                """, (new_note, self.current_therapy_id))
+            else:
+                cursor.execute("""
+                    INSERT INTO Therapy (PatientID, Note) VALUES (?, ?)
+                """, (patient_id, new_note))
+            
+            conn.commit()
+            success_label = ctk.CTkLabel(
+                self.main_frame,
+                text="Therapy saved successfully!",
+                text_color="#046A38",
+                font=("Arial", 14)
+            )
+            success_label.pack(pady=10)
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                self.main_frame,
+                text=f"Error saving therapy: {e}",
+                text_color="red"
+            )
+            error_label.pack(pady=10)
+        finally:
+            conn.close()
+
+    def view_questionnaire(self, patient_id, name, surname):
+        # Clear main frame
+        for widget in self.main_frame.winfo_children():
+            widget.destroy()
+
+        # Add back button
+        back_btn = ctk.CTkButton(
+            self.main_frame,
+            text="← Back",
+            width=100,
+            fg_color="#73C8AE",
+            hover_color="#73C8AE",
+            text_color="white",
+            command=lambda: self.show_main_menu(patient_id, name, surname)
+        )
+        back_btn.pack(anchor="w", padx=20, pady=20)
+
+        # Add title
+        title = ctk.CTkLabel(
+            self.main_frame,
+            text=f"Questionnaire - {name} {surname}",
+            font=("Arial", 24, "bold"),
+            text_color="#046A38"
+        )
+        title.pack(pady=20)
+
+        # Create main content frame
+        content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Create canvas and scrollbar
+        canvas = ctk.CTkCanvas(content_frame, bg="#E8F5F2", highlightthickness=0)
+        scrollbar = ttk.Scrollbar(content_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = ctk.CTkFrame(canvas, fg_color="transparent")
+        
+        # Configure canvas
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+        
+        # Create window in canvas
+        canvas_window = canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        
+        # Configure canvas to expand with window
+        def configure_canvas(event):
+            canvas.itemconfig(canvas_window, width=event.width)
+        canvas.bind("<Configure>", configure_canvas)
+        
+        # Configure scrollbar
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Pack canvas and scrollbar
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Question texts
+        question_texts = [
+            "How many times did you wake up during the night?",
+            "Did you sleep well?",
+            "Please describe what was wrong:",
+            "Have you encountered any problems with night measurements?",
+            "What kind of problems did you have?",
+            "Do you want to receive a daily reminder?",
+            "Is technical support needed?",
+            "Did you have any sleep apneas and if so, how many?",
+            "Did you follow the therapy?",
+            "What went wrong?",
+            "Do you want to insert a note for the doctor?",
+            "Insert your note:",
+            "Did you weigh yourself today?",
+            "Insert your weight:"
+        ]
+
+        # Load questionnaire responses
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("""
+                SELECT Date, Q1, Q2, Nota2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13
+                FROM Questionnaire
+                WHERE PatientID = ?
+                ORDER BY Date DESC
+            """, (patient_id,))
+            
+            responses = cursor.fetchall()
+            
+            if not responses:
+                no_data_label = ctk.CTkLabel(
+                    scrollable_frame,
+                    text="No questionnaire responses found",
+                    text_color="#046A38",
+                    font=("Arial", 14)
+                )
+                no_data_label.pack(pady=20)
+                return
+            
+            # Display responses
+            for response in responses:
+                date = response[0]
+                q1 = response[1]
+                q2 = response[2]
+                nota2 = response[3]
+                q3 = response[4]
+                q4 = response[5]
+                q5 = response[6]
+                q6 = response[7]
+                q7 = response[8]
+                q8 = response[9]
+                q9 = response[10]
+                q10 = response[11]
+                q11 = response[12]
+                q12 = response[13]
+                q13 = response[14]
+                
+                # Create response frame
+                response_frame = ctk.CTkFrame(scrollable_frame, fg_color="white", corner_radius=10)
+                response_frame.pack(fill="x", padx=20, pady=10)
+                
+                # Date label
+                date_label = ctk.CTkLabel(
+                    response_frame,
+                    text=f"Date: {date}",
+                    font=("Arial", 16, "bold"),
+                    text_color="#046A38"
+                )
+                date_label.pack(anchor="w", padx=20, pady=(20, 10))
+                
+                # Questions frame
+                questions_frame = ctk.CTkFrame(response_frame, fg_color="transparent")
+                questions_frame.pack(fill="x", padx=20, pady=10)
+                
+                # Display questions in order
+                questions = [q1, q2, nota2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13]
+                for i, value in enumerate(questions):
+                    if value is not None:
+                        q_frame = ctk.CTkFrame(questions_frame, fg_color="#F2F2F2", corner_radius=5)
+                        q_frame.pack(fill="x", pady=5)
+                        
+                        q_label = ctk.CTkLabel(
+                            q_frame,
+                            text=question_texts[i],
+                            font=("Arial", 14, "bold"),
+                            text_color="#046A38"
+                        )
+                        q_label.pack(anchor="w", padx=10, pady=5)
+                        
+                        q_value = ctk.CTkLabel(
+                            q_frame,
+                            text=str(value),
+                            font=("Arial", 14),
+                            text_color="#046A38"
+                        )
+                        q_value.pack(anchor="w", padx=20, pady=(0, 5))
+                
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                scrollable_frame,
+                text=f"Error loading questionnaire responses: {str(e)}",
+                text_color="red"
+            )
+            error_label.pack(pady=20)
+        finally:
+            conn.close()
+
+    def insert_in_follow_up(self, patient_id, name, surname):
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        
+        try:
+            # Get patient data from Possible_Follow_Up_Patients
+            cursor.execute("""
+                SELECT PatientID, Name, Surname, Days_since_last_OSA
+                FROM Possible_Follow_Up_Patients
+                WHERE PatientID = ?
+            """, (patient_id,))
+            
+            patient_data = cursor.fetchone()
+            
+            if patient_data:
+                # Insert into Follow_Up_Patients
+                cursor.execute("""
+                    INSERT INTO Follow_Up_Patients (PatientID, Name, Surname, Date)
+                    VALUES (?, ?, ?, date('now'))
+                """, (patient_data[0], patient_data[1], patient_data[2]))
+                
+                # Delete from Possible_Follow_Up_Patients
+                cursor.execute("""
+                    DELETE FROM Possible_Follow_Up_Patients
+                    WHERE PatientID = ?
+                """, (patient_id,))
+                
+                conn.commit()
+                
+                # Disable the button
+                for widget in self.main_frame.winfo_children():
+                    if isinstance(widget, ctk.CTkButton) and widget.cget("text") == "Insert in Follow Up":
+                        widget.configure(
+                            state="disabled",
+                            fg_color="grey",
+                            hover_color="grey"
+                        )
+                
+                # Show success message
+                success_label = ctk.CTkLabel(
+                    self.main_frame,
+                    text="Patient moved to Follow Up successfully!",
+                    font=("Arial", 16),
+                    text_color="#046A38"
+                )
+                success_label.pack(pady=20)
+                
+                # Close the window after 2 seconds
+                self.options_window.after(2000, self.options_window.destroy)
+                
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                self.main_frame,
+                text=f"Error moving patient: {str(e)}",
+                text_color="red"
+            )
+            error_label.pack(pady=20)
+        finally:
+            conn.close()
 
 if __name__ == "__main__":
     app = PossibleFollowUpPatientsView(user_id=1)  # oppure un altro id valido
