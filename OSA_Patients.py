@@ -572,7 +572,7 @@ class OSAPatientsView(ctk.CTkFrame):
         for widget in table_frame.winfo_children():
             if isinstance(widget, ctk.CTkButton) and widget.cget("text") == "+ Add New Drug":
                 widget.grid(row=next_row + 1, column=0, columnspan=3, pady=10)
-
+    
     def save_drugs(self, patient_id):
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()

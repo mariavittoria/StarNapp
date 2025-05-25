@@ -79,9 +79,8 @@ class DoctorMainView(ctk.CTk):
                 image=logo_image,
                 text=""
             )
-            logo_label.grid(row=7, column=0, padx=20, pady=(20, 5), sticky="sw")
+            logo_label.grid(row=7, column=0, padx=20, pady=(60, 5), sticky="sw")
         except Exception as e:
-            print(f"Error loading logo: {e}")
             # Fallback to text if logo fails to load
             logo_label = ctk.CTkLabel(
                 self.sidebar,
@@ -89,7 +88,7 @@ class DoctorMainView(ctk.CTk):
                 font=("Arial", 20, "bold"),
                 text_color="#046A38"
             )
-            logo_label.grid(row=7, column=0, padx=20, pady=(0,5), sticky="ew")
+            logo_label.grid(row=7, column=0, padx=20, sticky="s")
 
         # Support Button below the logo
         support_button = ctk.CTkButton(
@@ -102,7 +101,7 @@ class DoctorMainView(ctk.CTk):
             hover_color="#92D6B5",
             corner_radius=0
         )
-        support_button.grid(row=8, column=0, padx=10, sticky="ew")
+        support_button.grid(row=8, column=0, padx=10, pady=0, sticky="ew")
 
         # Main content frame
         self.main_frame = ctk.CTkFrame(self, fg_color="#E8F5F2")

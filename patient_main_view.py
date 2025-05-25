@@ -87,7 +87,14 @@ class PatientMainView(ctk.CTk):
             )
             logo_label.grid(row=5, column=0, padx=20, pady=20, sticky="sw")
         except Exception as e:
-            print(f"Error loading logo: {e}")
+            # Fallback to text if logo fails to load
+            logo_label = ctk.CTkLabel(
+                self.sidebar,
+                text="StarNapp",
+                font=("Arial", 20, "bold"),
+                text_color="#046A38"
+            )
+            logo_label.grid(row=7, column=0, padx=20, pady=20, sticky="ew")
 
         # Support Button below the logo
         support_button = ctk.CTkButton(

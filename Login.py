@@ -23,7 +23,7 @@ class AppProg:
 
         # Set dark background
         self.root.configure(fg_color="#2C5234")  # Forest green background
-
+        
         self.setup_login()
         self.root.mainloop()
 
