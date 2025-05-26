@@ -58,7 +58,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
         self.table_frame.pack(fill="both", expand=True)
         
         # Configure grid
-        for i in range(5):
+        for i in range(4):
             self.table_frame.grid_columnconfigure(i, weight=1)
 
         # Headers
@@ -146,7 +146,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
                 
                 # Actions frame
                 action_frame = ctk.CTkFrame(self.table_frame, fg_color=bg_color)
-                action_frame.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
+                action_frame.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
                 
                 # View Details button
                 details_btn = ctk.CTkButton(

@@ -16,7 +16,7 @@ class DoctorMainView(ctk.CTk):
 
 
         self.title("Doctor Main View")
-        self.geometry("900x600")
+        self.geometry("1200x800")
 
         # Layout setup
         self.grid_rowconfigure(0, weight=1)
