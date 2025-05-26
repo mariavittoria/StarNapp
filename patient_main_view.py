@@ -130,6 +130,50 @@ class PatientMainView(ctk.CTk):
             "Q13": "Insert your weight:"
         }
 
+        self.answer_decoding_map = {
+            "Q1": {
+                0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5+"
+            },
+            "Q2": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q3": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q4": {
+                0: "I forgot to turn on the device",
+                1: "The device doesn't work",
+                2: "I had problems with the application of the sensors"
+            },
+            "Q5": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q6": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q7": {
+                0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5+"
+            },
+            "Q8": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q10": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q12": {
+                0: "No change in weight",
+                1: "I didn't get weighed today",
+                2: "Yes, I want to insert my weight"
+            }
+        }
+
+
         self.show_home()
 
     def contact_support(self):
@@ -283,10 +327,20 @@ class PatientMainView(ctk.CTk):
                 )
                 question_label.pack(anchor="w", padx=20, pady=(15, 5))
                 
+                answer = self.answers.get(key)
+                if isinstance(answer, tuple):
+                    answer = answer[0]  # estrai la stringa dalla tupla
+
+                decoded_answer = self.answer_decoding_map.get(key, {}).get(answer, answer)
+                #decoded_answer = self.answer_decoding_map.get(key, {}).get(answer, answer),
+
                 # Answer in regular weight
                 answer_label = ctk.CTkLabel(
                     answer_frame, 
-                    text=f"Answer: {answer}",
+                    #text=f"Answer: {answer}",
+                    # Decode if mapping exists
+                    text=f"Answer: {decoded_answer}",
+
                     anchor="w", 
                     justify="left", 
                     wraplength=800,
