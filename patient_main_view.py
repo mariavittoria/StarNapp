@@ -1245,7 +1245,8 @@ class PatientMainView(ctk.CTk):
         title = ctk.CTkLabel(
             self.main_frame,
             text="Edit Medication" if drug_id else "Add New Medication",
-            font=("Arial", 20, "bold")
+            font=("Arial", 20, "bold"),
+            text_color="#046A38"
         )
         title.pack(pady=20)
 
@@ -1306,6 +1307,7 @@ class PatientMainView(ctk.CTk):
             buttons_frame,
             text="Save",
             width=120,
+            fg_color="#046A38",
             command=lambda: self.save_drug(drug_id)
         )
         save_button.pack(side="left", padx=10)

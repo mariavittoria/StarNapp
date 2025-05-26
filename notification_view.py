@@ -59,16 +59,17 @@ class NotificationsView(ctk.CTkFrame):
             self.table_frame.grid_columnconfigure(i, weight=1)
 
         # Headers
-        headers = ["Date", "Patient ID", "Nota 2", "Q9", "Q11"]
+        headers = ["Date", "Patient ID", "Problems during the night", "How many sleep apneas with non working device","Why the therapy wasn't followed", "Notes fore the doctor", "Weight"]
         for i, header in enumerate(headers):
             header_label = ctk.CTkLabel(
                 self.table_frame,
                 text=header,    
                 font=("Arial", 14, "bold"),
                 text_color="white",
+                wraplength=100,
                 fg_color="#73C8AE",
                 corner_radius=5,
-                height=40
+                height=80
             )
             header_label.grid(row=0, column=i, padx=2, pady=2, sticky="nsew")
 
@@ -98,15 +99,19 @@ class NotificationsView(ctk.CTkFrame):
                     q.Date,
                     p.PatientID,
                     q.Nota2,
+                    q.Q7,
                     q.Q9,
-                    q.Q11
+                    q.Q11,
+                    q.Q13
                 FROM Questionnaire q
                 JOIN Patients p ON q.PatientID = p.PatientID
                 WHERE p.DoctorID = ?
                 AND (
                     q.Nota2 IS NOT NULL 
+                    OR q.Q7 IS NOT NULL
                     OR q.Q9 IS NOT NULL 
                     OR q.Q11 IS NOT NULL
+                    OR q.Q13 IS NOT NULL
                 )
                 ORDER BY q.Date DESC
             """
@@ -125,7 +130,7 @@ class NotificationsView(ctk.CTkFrame):
                 return
             
             # Display responses
-            for i, (date, patient_id, nota2, q9, q11) in enumerate(responses, start=1):
+            for i, (date, patient_id, nota2, q7, q9, q11, q13) in enumerate(responses, start=1):
                 # Skip if all fields are empty
                 if nota2 is None and q9 is None and q11 is None:
                     continue
@@ -156,6 +161,7 @@ class NotificationsView(ctk.CTkFrame):
                     self.table_frame,
                     text=patient_id,
                     font=("Arial", 12),
+
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -175,30 +181,58 @@ class NotificationsView(ctk.CTkFrame):
                 )
                 nota2_label.grid(row=i, column=2, padx=2, pady=2, sticky="nsew")
                 
-                # Q9
-                q9_label = ctk.CTkLabel(
+                # Q7
+                q7_label = ctk.CTkLabel(
                     self.table_frame,
-                    text=str(q9) if q9 is not None else "-",
+                    text=int(q7) if q7 is not None else "-",
                     font=("Arial", 12),
+                    
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
                     height=40
                 )
-                q9_label.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
+                q7_label.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
+                
+                # Q9
+                q9_label = ctk.CTkLabel(
+                    self.table_frame,
+                    text=str(q9) if q9 is not None else "-",
+                    font=("Arial", 12),
+                    
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                q9_label.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
                 
                 # Q11
                 q11_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(q11) if q11 is not None else "-",
                     font=("Arial", 12),
+                    
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
                     height=40
                 )
-                q11_label.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
-                
+                q11_label.grid(row=i, column=5, padx=2, pady=2, sticky="nsew")
+
+                # Q13
+                q13_label = ctk.CTkLabel(
+                    self.table_frame,
+                    text=str(q13) if q13 is not None else "-",
+                    font=("Arial", 12),
+                    
+                    text_color="#046A38",
+                    fg_color=bg_color,
+                    anchor="center",
+                    height=40
+                )
+                q13_label.grid(row=i, column=6, padx=2, pady=2, sticky="nsew")
+
         except sqlite3.Error as e:
             error_label = ctk.CTkLabel(
                 self.table_frame,

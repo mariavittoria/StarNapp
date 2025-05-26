@@ -262,18 +262,18 @@ class OSAPatientsView(ctk.CTkFrame):
         spo2_button.pack(pady=15)
 
         # Actions frame
-        actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        actions_frame.pack(pady=30)
+        self.actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        self.actions_frame.pack(pady=30)
 
         # Plan a Visit button
         self.visit_button = ctk.CTkButton(
-            actions_frame,
+            self.actions_frame,
             text="Plan a Visit",
             width=200,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
-            command=lambda: self.plan_visit(patient_id, name, surname)
+            command=lambda pid=patient_id, n=name, s=surname: self.plan_visit(pid, name, surname)
         )
         self.visit_button.pack(pady=15)
 
@@ -282,7 +282,7 @@ class OSAPatientsView(ctk.CTkFrame):
 
         # View/Modify Therapy button
         therapy_button = ctk.CTkButton(
-            actions_frame,
+            self.actions_frame,
             text="View/Modify Therapy",
             width=200,
             fg_color="#73C8AE",
@@ -294,7 +294,7 @@ class OSAPatientsView(ctk.CTkFrame):
 
         # View Questionnaire button
         questionnaire_button = ctk.CTkButton(
-            actions_frame,
+            self.actions_frame,
             text="View Patient Questionnaire",
             width=200,
             fg_color="#73C8AE",
@@ -309,46 +309,76 @@ class OSAPatientsView(ctk.CTkFrame):
         cursor = conn.cursor()
         try:
             cursor.execute("""
-                SELECT COUNT(*) FROM Notifications 
-                WHERE PatientID = ? AND Type = 'visit' 
-                AND datetime(CreationDate) > datetime('now', '-24 hours')
+                SELECT LastNotification 
+                FROM LastNotificationTime
+                WHERE PatientID = ?
             """, (patient_id,))
-            count = cursor.fetchone()[0]
-            if count > 0:
+            last_notification = cursor.fetchone()
+            
+            if last_notification and last_notification[0]:
+                last_time = datetime.datetime.strptime(last_notification[0], "%Y-%m-%d %H:%M:%S")
+                time_diff = datetime.datetime.now() - last_time
+                
+                if time_diff.total_seconds() < 86400:  # 24 hours in seconds
+                    self.visit_button.configure(
+                        state="disabled",
+                        fg_color="#CCCCCC",
+                        hover_color="#CCCCCC"
+                    )
+                else:
+                    self.visit_button.configure(
+                        state="normal",
+                        fg_color="#73C8AE",
+                        hover_color="#046A38"
+                    )
+            else:
                 self.visit_button.configure(
-                    state="disabled",
-                    fg_color="#CCCCCC",
-                    hover_color="#CCCCCC"
+                    state="normal",
+                    fg_color="#73C8AE",
+                    hover_color="#046A38"
                 )
+
         except sqlite3.Error as e:
             print(f"Error checking notification state: {e}")
         finally:
             conn.close()
 
     def plan_visit(self, patient_id, name, surname):
-        # Import VisitDoctorView
         from VisitDoctorView import VisitDoctorView
-        
-        # Create a temporary instance of VisitDoctorView to access the send_notification_to_patient method
-        temp_view = VisitDoctorView(None, None)  # We don't need the actual parent frame or doctor_id for this
-        
-        # Call the send_notification_to_patient method
-        temp_view.send_notification_to_patient(patient_id, f"{name} {surname}")
-        
-        # Disable the button
-        self.visit_button.configure(
-            state="disabled",
-            fg_color="grey",
-            hover_color="grey"
-        )
-        # Show success message
-        success_label = ctk.CTkLabel(
-            self.main_frame,
-            text="Visit notification sent successfully!",
-            font=("Arial", 16),
-            text_color="#046A38"
-        )
-        success_label.pack(pady=20)
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            # Send notification
+            VisitDoctorView.send_notification_to_patient(patient_id, name, surname)
+            
+            # Update LastNotificationTime
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            cursor.execute("""
+                INSERT OR REPLACE INTO LastNotificationTime (PatientID, LastNotification)
+                VALUES (?, ?)
+            """, (patient_id, current_time))
+            conn.commit()
+            
+            # Disable the button
+            self.visit_button.configure(
+                state="disabled",
+                fg_color="#CCCCCC",
+                hover_color="#CCCCCC"
+            )
+
+            # Show success message
+            success_label = ctk.CTkLabel(
+                self.actions_frame,
+                text="Visit notification sent successfully!",
+                font=("Arial", 16),
+                text_color="#046A38"
+            )
+            success_label.pack(pady=20)
+
+        except sqlite3.Error as e:
+            print(f"Error sending notification: {e}")
+        finally:
+            conn.close()
 
     def open_ahi(self, patient_id, name, surname):
         from ahi_view_paziente import AHIViewPaziente
@@ -417,7 +447,7 @@ class OSAPatientsView(ctk.CTkFrame):
 
         # Create table frame for drugs
         table_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10)
-        table_frame.pack(fill="x", pady=(0, 20))
+        table_frame.pack(pady=(0, 20))
 
         # Table headers
         headers = ["Drug Information", "Start Date", "End Date"]
@@ -429,9 +459,11 @@ class OSAPatientsView(ctk.CTkFrame):
                 text_color="white",
                 fg_color="#73C8AE",
                 corner_radius=5,
-                height=40
+                height=40,
+                width=200,
+                anchor="center"
             )
-            label.grid(row=0, column=i, padx=20, pady=10, sticky="w")
+            label.grid(row=0, column=i, padx=20, pady=10, sticky="n")
 
         # Get drugs from database
         conn = sqlite3.connect("Database_proj.db")
@@ -449,27 +481,19 @@ class OSAPatientsView(ctk.CTkFrame):
         
             drugs = cursor.fetchall()
 
-            if not drugs:
-                no_drugs_label = ctk.CTkLabel(
-                    table_frame,
-                    text="No medications found",
-                    font=("Arial", 14),
-                    text_color="#046A38"
-                )
-                no_drugs_label.grid(row=1, column=0, columnspan=3, pady=20)
-            else:
+            if  drugs:
                 for i, (note, start_date, end_date) in enumerate(drugs, 1):
                     note_entry = ctk.CTkEntry(table_frame, width=300)
                     note_entry.insert(0, note)
-                    note_entry.grid(row=i, column=0, padx=20, pady=5, sticky="w")
+                    note_entry.grid(row=i, column=0, padx=20, pady=5)
 
                     start_entry = ctk.CTkEntry(table_frame, width=150)
                     start_entry.insert(0, start_date)
-                    start_entry.grid(row=i, column=1, padx=20, pady=5, sticky="w")
+                    start_entry.grid(row=i, column=1, padx=20, pady=5)
 
                     end_entry = ctk.CTkEntry(table_frame, width=150)
                     end_entry.insert(0, end_date)
-                    end_entry.grid(row=i, column=2, padx=20, pady=5, sticky="w")
+                    end_entry.grid(row=i, column=2, padx=20, pady=5)
 
                     self.drug_entries.append((note_entry, start_entry, end_entry))
 
@@ -482,7 +506,7 @@ class OSAPatientsView(ctk.CTkFrame):
                 text_color="white",
                 command=lambda: self.add_new_drug_row(table_frame)
             )
-            add_drug_btn.grid(row=len(drugs) + 1, column=0, columnspan=3, pady=10)
+            add_drug_btn.grid(row=len(drugs) + 1, column=0, columnspan=3, pady=10, sticky="n")
 
         # Save button for drugs
             drug_save_btn = ctk.CTkButton(
@@ -508,7 +532,7 @@ class OSAPatientsView(ctk.CTkFrame):
 
         # Create therapy input frame
             therapy_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10)
-            therapy_frame.pack(fill="x", pady=20)
+            therapy_frame.pack(pady=20)
 
             therapy_label = ctk.CTkLabel(
                 therapy_frame,
@@ -648,8 +672,6 @@ class OSAPatientsView(ctk.CTkFrame):
             self.main_frame,
             text="← Back",
             width=100,
-            fg_color="#73C8AE",
-            hover_color="#73C8AE",
             text_color="white",
             command=lambda: self.show_main_menu(patient_id, name, surname)
         )
@@ -695,23 +717,66 @@ class OSAPatientsView(ctk.CTkFrame):
         scrollbar.pack(side="right", fill="y")
 
         # Question texts
-        question_texts = [
-            "How many times did you wake up during the night?",
-            "Did you sleep well?",
-            "Please describe what was wrong:",
-            "Have you encountered any problems with night measurements?",
-            "What kind of problems did you have?",
-            "Do you want to receive a daily reminder?",
-            "Is technical support needed?",
-            "Did you have any sleep apneas and if so, how many?",
-            "Did you follow the therapy?",
-            "What went wrong?",
-            "Do you want to insert a note for the doctor?",
-            "Insert your note:",
-            "Did you weigh yourself today?",
-            "Insert your weight:"
-        ]
+        self.question_text_map = {
+            "Q1": "How many times did you wake up during the night?",
+            "Q2": "Did you sleep well?",
+            "Nota2": "Please describe what was wrong:",
+            "Q3": "Have you encountered any problems with night measurements?",
+            "Q4": "What kind of problems did you have?",
+            "Q5": "Do you want to receive a daily reminder?",
+            "Q6": "Is technical support needed?",
+            "Q7": "Did you have any sleep apneas and if so, how many?",
+            "Q8": "Did you follow the therapy?",
+            "Q9": "What went wrong?",
+            "Q10": "Do you want to insert a note for the doctor?",
+            "Q11": "Insert your note:",
+            "Q12": "Did you weigh yourself today?",
+            "Q13": "Insert your weight:"
+        }
 
+        self.answer_decoding_map = {
+            "Q1": {
+                0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5+"
+            },
+            "Q2": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q3": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q4": {
+                0: "I forgot to turn on the device",
+                1: "The device doesn't work",
+                2: "I had problems with the application of the sensors"
+            },
+            "Q5": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q6": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q7": {
+                0: "0", 1: "1", 2: "2", 3: "3", 4: "4", 5: "5+"
+            },
+            "Q8": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q10": {
+                0: "No",
+                1: "Yes"
+            },
+            "Q12": {
+                0: "No change in weight",
+                1: "I didn't get weighed today",
+                2: "Yes, I want to insert my weight"
+            }
+        }
+        
         # Load questionnaire responses
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
@@ -739,20 +804,6 @@ class OSAPatientsView(ctk.CTkFrame):
             # Display responses
             for response in responses:
                 date = response[0]
-                q1 = response[1]
-                q2 = response[2]
-                nota2 = response[3]
-                q3 = response[4]
-                q4 = response[5]
-                q5 = response[6]
-                q6 = response[7]
-                q7 = response[8]
-                q8 = response[9]
-                q9 = response[10]
-                q10 = response[11]
-                q11 = response[12]
-                q12 = response[13]
-                q13 = response[14]
                 
                 # Create response frame
                 response_frame = ctk.CTkFrame(scrollable_frame, fg_color="white", corner_radius=10)
@@ -771,28 +822,37 @@ class OSAPatientsView(ctk.CTkFrame):
                 questions_frame = ctk.CTkFrame(response_frame, fg_color="transparent")
                 questions_frame.pack(fill="x", padx=20, pady=10)
                 
-                # Display questions in order
-                questions = [q1, q2, nota2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13]
-                for i, value in enumerate(questions):
+                # Display questions and answers
+                for i, (key, value) in enumerate(zip(
+                    ["Q1", "Q2", "Nota2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10", "Q11", "Q12", "Q13"],
+                    response[1:]
+                )):
                     if value is not None:
                         q_frame = ctk.CTkFrame(questions_frame, fg_color="#F2F2F2", corner_radius=5)
                         q_frame.pack(fill="x", pady=5)
                         
+                        # Question text
                         q_label = ctk.CTkLabel(
                             q_frame,
-                            text=question_texts[i],
+                            text=self.question_text_map.get(key, key),
                             font=("Arial", 14, "bold"),
                             text_color="#046A38"
                         )
                         q_label.pack(anchor="w", padx=10, pady=5)
                         
-                        q_value = ctk.CTkLabel(
+                        # Decode and display answer
+                        if key in self.answer_decoding_map:
+                            decoded_answer = self.answer_decoding_map[key].get(value, value)
+                        else:
+                            decoded_answer = value
+                            
+                        answer_label = ctk.CTkLabel(
                             q_frame,
-                            text=str(value),
+                            text=f"Answer: {decoded_answer}",
                             font=("Arial", 14),
                             text_color="#046A38"
                         )
-                        q_value.pack(anchor="w", padx=20, pady=(0, 5))
+                        answer_label.pack(anchor="w", padx=20, pady=(0, 5))
                 
         except sqlite3.Error as e:
             error_label = ctk.CTkLabel(

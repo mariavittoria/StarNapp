@@ -244,7 +244,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
-            command=lambda: self.plan_visit(patient_id, name, surname)
+            command=lambda pid=patient_id, n=name, s=surname: self.plan_visit(pid, n, s)
         )
         self.visit_button.pack(pady=15)
 
@@ -297,29 +297,41 @@ class FollowUpPatientsView(ctk.CTkFrame):
             conn.close()
 
     def plan_visit(self, patient_id, name, surname):
-        # Import VisitDoctorView
         from VisitDoctorView import VisitDoctorView
-        
-        # Create a temporary instance of VisitDoctorView to access the send_notification_to_patient method
-        temp_view = VisitDoctorView(None, None)  # We don't need the actual parent frame or doctor_id for this
-        
-        # Call the send_notification_to_patient method
-        temp_view.send_notification_to_patient(patient_id, f"{name} {surname}")
-        
-        # Disable the button
-        self.visit_button.configure(
-            state="disabled",
-            fg_color="grey",
-            hover_color="grey"
-        )
-        # Show success message
-        success_label = ctk.CTkLabel(
-            self.main_frame,
-            text="Visit notification sent successfully!",
-            font=("Arial", 16),
-            text_color="#046A38"
-        )
-        success_label.pack(pady=20)
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            # Send notification
+            VisitDoctorView.send_notification_to_patient(patient_id, name, surname)
+            
+            # Update LastNotificationTime
+            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            cursor.execute("""
+                INSERT OR REPLACE INTO LastNotificationTime (PatientID, LastNotification)
+                VALUES (?, ?)
+            """, (patient_id, current_time))
+            conn.commit()
+            
+            # Disable the button
+            self.visit_button.configure(
+                state="disabled",
+                fg_color="#CCCCCC",
+                hover_color="#CCCCCC"
+            )
+
+            # Show success message
+            success_label = ctk.CTkLabel(
+                self.main_frame,
+                text="Visit notification sent successfully!",
+                font=("Arial", 16),
+                text_color="#046A38"
+            )
+            success_label.pack(pady=20)
+
+        except sqlite3.Error as e:
+            print(f"Error sending notification: {e}")
+        finally:
+            conn.close()
 
     def open_odi(self, patient_id, name, surname):
         from odi_view_paziente import ODIViewPaziente
@@ -408,27 +420,20 @@ class FollowUpPatientsView(ctk.CTkFrame):
         
             drugs = cursor.fetchall()
 
-            if not drugs:
-                no_drugs_label = ctk.CTkLabel(
-                    table_frame,
-                    text="No medications found",
-                    font=("Arial", 14),
-                    text_color="#046A38"
-                )
-                no_drugs_label.grid(row=1, column=0, columnspan=3, pady=20)
-            else:
+            if drugs:
+                
                 for i, (note, start_date, end_date) in enumerate(drugs, 1):
                     note_entry = ctk.CTkEntry(table_frame, width=300)
                     note_entry.insert(0, note)
-                    note_entry.grid(row=i, column=0, padx=20, pady=5, sticky="w")
+                    note_entry.grid(row=i, column=0, padx=20, pady=5)
 
                     start_entry = ctk.CTkEntry(table_frame, width=150)
                     start_entry.insert(0, start_date)
-                    start_entry.grid(row=i, column=1, padx=20, pady=5, sticky="w")
+                    start_entry.grid(row=i, column=1, padx=20, pady=5)
 
                     end_entry = ctk.CTkEntry(table_frame, width=150)
                     end_entry.insert(0, end_date)
-                    end_entry.grid(row=i, column=2, padx=20, pady=5, sticky="w")
+                    end_entry.grid(row=i, column=2, padx=20, pady=5)
 
                     self.drug_entries.append((note_entry, start_entry, end_entry))
 
@@ -441,7 +446,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
                 text_color="white",
                 command=lambda: self.add_new_drug_row(table_frame)
             )
-            add_drug_btn.grid(row=len(drugs) + 1, column=0, columnspan=3, pady=10)
+            add_drug_btn.grid(row=len(drugs) + 1, column=0, columnspan=3, pady=10, sticky="n")
 
         # Save button for drugs
             drug_save_btn = ctk.CTkButton(
@@ -467,7 +472,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
 
         # Create therapy input frame
             therapy_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10)
-            therapy_frame.pack(fill="x", pady=20)
+            therapy_frame.pack(pady=20)
 
             therapy_label = ctk.CTkLabel(
                 therapy_frame,
