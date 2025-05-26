@@ -58,7 +58,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
         self.table_frame.pack(fill="both", expand=True)
         
         # Configure grid
-        for i in range(4):  # 4 columns: ID, Name, Surname, Details
+        for i in range(5):
             self.table_frame.grid_columnconfigure(i, weight=1)
 
         # Headers
@@ -96,11 +96,11 @@ class FollowUpPatientsView(ctk.CTkFrame):
             if not patients:
                 no_data_label = ctk.CTkLabel(
                     self.table_frame,
-                    text="No follow up patients found",
+                    text="No possible follow up patients found",
                     text_color="#046A38",
                     font=("Arial", 14)
                 )
-                no_data_label.grid(row=1, column=0, columnspan=4, pady=20)  # Changed to span 4 columns
+                no_data_label.grid(row=1, column=0, columnspan=5, pady=20)
                 return
             
             # Display patients
@@ -146,7 +146,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
                 
                 # Actions frame
                 action_frame = ctk.CTkFrame(self.table_frame, fg_color=bg_color)
-                action_frame.grid(row=i, column=3, padx=2, pady=2, sticky="nsew")
+                action_frame.grid(row=i, column=4, padx=2, pady=2, sticky="nsew")
                 
                 # View Details button
                 details_btn = ctk.CTkButton(
@@ -167,7 +167,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
                 text=f"Error loading patients: {str(e)}",
                 text_color="red"
             )
-            error_label.grid(row=1, column=0, columnspan=4, pady=20)  # Changed to span 4 columns
+            error_label.grid(row=1, column=0, columnspan=5, pady=20)
         finally:
             conn.close()
 
@@ -248,7 +248,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
         )
         self.visit_button.pack(pady=15)
 
-        # Check if visit button should be disabled
+        # Check if button should be disabled
         self.check_visit_button_state(patient_id)
 
         # View/Modify Therapy button
@@ -263,8 +263,8 @@ class FollowUpPatientsView(ctk.CTkFrame):
         )
         therapy_button.pack(pady=15)
 
-        # Regular parameters button
-        self.regular_button = ctk.CTkButton(
+        # Follow up sta andando bene
+        ok_button = ctk.CTkButton(
             actions_frame,
             text="Regular parameters",
             width=200,
@@ -273,10 +273,7 @@ class FollowUpPatientsView(ctk.CTkFrame):
             text_color="white",
             command=lambda: self.regular_parameters(patient_id, name, surname)
         )
-        self.regular_button.pack(pady=15)
-
-        # Check if regular parameters button should be disabled
-        self.check_regular_button_state(patient_id)
+        ok_button.pack(pady=15)
 
     def check_visit_button_state(self, patient_id):
         conn = sqlite3.connect("Database_proj.db")
@@ -296,27 +293,6 @@ class FollowUpPatientsView(ctk.CTkFrame):
                 )
         except sqlite3.Error as e:
             print(f"Error checking notification state: {e}")
-        finally:
-            conn.close()
-
-    def check_regular_button_state(self, patient_id):
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        try:
-            cursor.execute("""
-                SELECT COUNT(*) FROM Notifications 
-                WHERE PatientID = ? AND Type = 'regular_parameters' 
-                AND datetime(Timestamp) > datetime('now', '-24 hours')
-            """, (patient_id,))
-            count = cursor.fetchone()[0]
-            if count > 0:
-                self.regular_button.configure(
-                    state="disabled",
-                    fg_color="#CCCCCC",
-                    hover_color="#CCCCCC"
-                )
-        except sqlite3.Error as e:
-            print(f"Error checking regular parameters state: {e}")
         finally:
             conn.close()
 
@@ -634,13 +610,6 @@ class FollowUpPatientsView(ctk.CTkFrame):
                 VALUES (?, ?, ?, ?, ?)
             """, (patient_id, f"{name} {surname}", "regular_parameters", message, timestamp))
             conn.commit()
-            
-            # Disable the button
-            self.regular_button.configure(
-                state="disabled",
-                fg_color="#CCCCCC",
-                hover_color="#CCCCCC"
-            )
             
             # Show success message
             success_label = ctk.CTkLabel(

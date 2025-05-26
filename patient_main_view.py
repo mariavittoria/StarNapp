@@ -25,7 +25,7 @@ class PatientMainView(ctk.CTk):
         self.slot_buttons = {}
 
         self.title(f"Patient Dashboard - {self.patient_name}")
-        self.geometry("900x600")
+        self.geometry("1200x800")  # Increased window size
         self.center_window()
 
         # Layout principale
@@ -190,8 +190,8 @@ class PatientMainView(ctk.CTk):
                 conn.close()
 
     def center_window(self):
-        w = 900
-        h = 600
+        w = 1200  # Increased width
+        h = 800   # Increased height
         x = (self.winfo_screenwidth() // 2) - (w // 2)
         y = (self.winfo_screenheight() // 2) - (h // 2)
         self.geometry(f"{w}x{h}+{x}+{y}")

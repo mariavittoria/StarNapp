@@ -42,7 +42,7 @@ class ODIViewPaziente(ctk.CTkFrame):
             fg_color="#204080",
             command=self.go_back
         )
-        back_btn.pack(anchor="w", padx=20, pady=(20, 10))
+        back_btn.pack(anchor="w", padx=20, pady=(10, 5))
 
         # Add title below back button
         title = ctk.CTkLabel(
@@ -72,11 +72,11 @@ class ODIViewPaziente(ctk.CTkFrame):
 
         # Create a frame for the values
         values_frame = ctk.CTkFrame(self, fg_color="#E8F5F2", corner_radius=10)
-        values_frame.pack(pady=10)
+        values_frame.pack(pady=(0,5))
 
         # Create a frame for the stats with white background
         stats_frame = ctk.CTkFrame(values_frame, fg_color="white", corner_radius=8)
-        stats_frame.pack(pady=5, padx=10)
+        stats_frame.pack(pady=(5,0), padx=10)
 
         # Last night value
         last_night_label = ctk.CTkLabel(
@@ -126,7 +126,7 @@ class ODIViewPaziente(ctk.CTkFrame):
 
         # Format x-axis dates
         ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-        plt.xticks(rotation=45)
+        plt.xticks(rotation=15)
 
         # Add data labels above points
         for i, v in enumerate(values):
@@ -134,8 +134,9 @@ class ODIViewPaziente(ctk.CTkFrame):
 
         # Create canvas
         canvas = FigureCanvasTkAgg(fig, master=self)
+        fig.tight_layout()
         canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        canvas.get_tk_widget().pack(fill="both", expand=True, padx=20, pady=(0,10))
 
     def go_back(self):
         if self.go_back_callback:
