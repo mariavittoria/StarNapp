@@ -62,7 +62,7 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
             self.table_frame.grid_columnconfigure(i, weight=1)
 
         # Headers
-        headers = ["Patient ID", "Name", "Surname", "AHI", "Details"]
+        headers = ["Patient ID", "Name", "Surname", "Days since last OSA", "Details"]
         for i, header in enumerate(headers):
             header_label = ctk.CTkLabel(
                 self.table_frame,

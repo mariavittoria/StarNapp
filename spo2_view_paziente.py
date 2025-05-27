@@ -22,6 +22,14 @@ class SpO2ViewPaziente(ctk.CTkFrame):
 
         self.show_spo2()
 
+    def get_indexes_data(self):
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT Date, MeanSpO2 FROM Indexes WHERE PatientID = ? AND MeanSpO2 IS NOT NULL ORDER BY Date DESC", (self.patient_id,))
+        data = cursor.fetchall()
+        conn.close()
+        return data 
+
     def show_spo2(self):
         for widget in self.winfo_children():
             widget.destroy()
@@ -45,12 +53,7 @@ class SpO2ViewPaziente(ctk.CTkFrame):
         )
         title.pack(pady=(0, 20))
 
-        # Get SpO2 data
-        conn = sqlite3.connect("Database_proj.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT Date, MeanSpO2 FROM Indexes WHERE PatientID = ? AND MeanSpO2 IS NOT NULL ORDER BY Date DESC", (self.patient_id,))
-        data = cursor.fetchall()
-        conn.close()
+        data = self.get_indexes_data()
 
         if not data:
             no_data_label = ctk.CTkLabel(

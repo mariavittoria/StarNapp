@@ -111,7 +111,7 @@ class OSAPatientsView(ctk.CTkFrame):
             # Display patients
             for i, (patient_id, name, surname, ahi) in enumerate(patients, start=1):
                 # Alternate background color
-                bg_color = "#F2F2F2" if i % 2 == 0 else "white"
+                bg_color = "white" if i % 2 == 0 else "#F2F2F2"
                 
                 # Patient ID
                 id_label = ctk.CTkLabel(

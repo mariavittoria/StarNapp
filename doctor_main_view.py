@@ -39,10 +39,10 @@ class DoctorMainView(ctk.CTk):
         buttons = [
             ("OSA patients", self.go_to_OSA_Patients),
             ("7 Days OK Patients", self.go_to_7_days_ok),
-            ("Follow up patients", self.go_to_follow_up),
             ("Possible Follow up", self.go_to_possible_follow_up),
+            ("Follow up patients", self.go_to_follow_up),
             ("Visits", self.go_to_visits),
-            ("Notifications", self.show_notifications)
+            ("Questionnaire side notes", self.show_notifications)
         ]
         
         self.sidebar_buttons = []  # Store buttons for selection state
