@@ -29,11 +29,11 @@ class DoctorMainView(ctk.CTk):
 
         self.doctor_label = ctk.CTkLabel(
             self.sidebar, 
-            text=f"🧑‍⚕️ {self.doctor_name}", 
-            font=("Arial", 16, "bold"),
+            text=f"🩺 {self.doctor_name}", 
+            font=("Arial", 20, "bold"),
             text_color="#046A38"  # Dark green text
         )
-        self.doctor_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.doctor_label.grid(row=0, column=0, padx=20, pady=(40, 40))
 
         # Bottoni sidebar
         buttons = [
@@ -79,7 +79,7 @@ class DoctorMainView(ctk.CTk):
                 image=logo_image,
                 text=""
             )
-            logo_label.grid(row=7, column=0, padx=20, pady=(260,0), sticky="s")
+            logo_label.grid(row=7, column=0, padx=20, pady=(210,5), sticky="s")
         except Exception as e:
             # Fallback to text if logo fails to load
             logo_label = ctk.CTkLabel(

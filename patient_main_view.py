@@ -40,10 +40,10 @@ class PatientMainView(ctk.CTk):
         self.profile_label = ctk.CTkLabel(
             self.sidebar_frame, 
             text=f"👤 {self.patient_name}", 
-            font=("Arial", 16, "bold"),
+            font=("Arial", 20, "bold"),
             text_color="#046A38"  # Dark green text
         )
-        self.profile_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.profile_label.grid(row=0, column=0, padx=20, pady=(40, 40))
 
         # Sidebar buttons
         buttons = [
