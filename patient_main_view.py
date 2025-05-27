@@ -85,7 +85,7 @@ class PatientMainView(ctk.CTk):
                 image=logo_image,
                 text=""
             )
-            logo_label.grid(row=5, column=0, padx=20, pady=20, sticky="sw")
+            logo_label.grid(row=5, column=0, padx=20, pady=20, sticky="s")
         except Exception as e:
             # Fallback to text if logo fails to load
             logo_label = ctk.CTkLabel(
@@ -94,7 +94,7 @@ class PatientMainView(ctk.CTk):
                 font=("Arial", 20, "bold"),
                 text_color="#046A38"
             )
-            logo_label.grid(row=7, column=0, padx=20, pady=20, sticky="ew")
+            logo_label.grid(row=7, column=0, padx=20, pady=20, sticky="s")
 
         # Support Button below the logo
         support_button = ctk.CTkButton(
@@ -107,7 +107,7 @@ class PatientMainView(ctk.CTk):
             hover_color="#92D6B5",
             corner_radius=0
         )
-        support_button.grid(row=6, column=0, padx=10, pady=(10, 10), sticky="ew")
+        support_button.grid(row=6, column=0, padx=10, pady=(5, 20), sticky="s")
 
         # Main frame
         self.main_frame = ctk.CTkFrame(self, corner_radius=10, fg_color="white")  # White background
