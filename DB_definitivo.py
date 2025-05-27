@@ -204,21 +204,21 @@ cursor.executemany("""
 INSERT OR IGNORE INTO Patients (Name, Surname, dateOfBirth, height, weight, Age, Gender, Nationality, ClinicalHistory, PatientID, PatientPassword, PhoneNumber, DoctorID)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, [
-    ('Luca', 'Bianchi', '2000-05-15', 1.75, 70, None, 'M', 'Italiano', 'Nessuna', 'PAT001', 'password123', '1234567890', 'DOC001'),
-    ('Lucia', 'Garofalo', '2004-06-15', 1.65, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT002', '345678', '1234567899', 'DOC001'),
-    ('Marco', 'Verdi', '1992-03-22', 1.80, 85, None, 'M', 'Italiano', 'Asma lieve', 'PAT003', 'pass333', '1234562222', 'DOC001'),
-    ('Chiara', 'Neri', '1990-01-12', 1.68, 62, None, 'F', 'Italiano', 'Nessuna', 'PAT004', 'chiara90', '1234562233', 'DOC001'),
-    ('Giorgio', 'Fontana', '1985-07-08', 1.82, 88, None, 'M', 'Italiano', 'Ipertensione', 'PAT005', 'giorgio85', '1234562244', 'DOC001'),
-    ('Federica', 'Russo', '1997-10-22', 1.60, 55, None, 'F', 'Italiano', 'Nessuna', 'PAT006', 'fede97', '1234562255', 'DOC001'),
-    ('Valerio', 'Bassi', '1980-11-15', 1.75, 78, None, 'M', 'Italiano', 'Diabete', 'PAT007', 'valbass80', '1234562266', 'DOC001'),
-    ('Irene', 'Ferri', '1995-02-25', 1.70, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT008', 'irenef95', '1234562277', 'DOC001'),
+    ('Luca', 'Verdi', '1960-05-15', 1.75, 70, None, 'M', 'Italiano', 'Nessuna', 'PAT001', 'password123', '1234567890', 'DOC001'),
+    ('Lucia', 'Garofalo', '1956-06-15', 1.65, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT002', '345678', '1234567899', 'DOC001'),
+    ('Marco', 'Verdi', '1952-03-22', 1.80, 85, None, 'M', 'Italiano', 'Asma lieve', 'PAT003', 'pass333', '1234562222', 'DOC001'),
+    ('Chiara', 'Neri', '1938-01-12', 1.68, 62, None, 'F', 'Italiano', 'Nessuna', 'PAT004', 'chiara90', '1234562233', 'DOC001'),
+    ('Giorgio', 'Fontana', '1944-07-08', 1.82, 88, None, 'M', 'Italiano', 'Ipertensione', 'PAT005', 'giorgio85', '1234562244', 'DOC001'),
+    ('Federica', 'Russo', '1947-10-22', 1.60, 55, None, 'F', 'Italiano', 'Nessuna', 'PAT006', 'fede97', '1234562255', 'DOC001'),
+    ('Valerio', 'Bassi', '1962-11-15', 1.75, 78, None, 'M', 'Italiano', 'Diabete', 'PAT007', 'valbass80', '1234562266', 'DOC001'),
+    ('Irene', 'Ferri', '1953-02-25', 1.70, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT008', 'irenef95', '1234562277', 'DOC001'),
     ('Marco', 'Esposito', '1956-06-16', 1.87, 90, None, 'M', 'Italiano', 'Osa moderata', 'PAT009', 'pass333', '1234562226', 'DOC001'),
-    ('Angelo', 'Galli', '1992-04-26', 1.70, 80, None, 'M', 'Italiano', 'Osa moderata', 'PAT010', 'pass333', '1234562228', 'DOC001'),
-    ('Giulia', 'Conti', '2001-08-10', 1.68, 58, None, 'F', 'Italiano', 'Nessuna', 'PAT011', 'giuly01', '1234562299', 'DOC001'),
-    ('Davide', 'Rizzi', '1993-03-18', 1.78, 75, None, 'M', 'Italiano', 'Allergie stagionali', 'PAT012', 'davidr', '1234562300', 'DOC001'),
-    ('Marta', 'De Luca', '1989-09-29', 1.66, 65, None, 'F', 'Italiano', 'Nessuna', 'PAT013', 'marta89', '1234562301', 'DOC001'),
-    ('Stefano', 'Barbieri', '1975-05-03', 1.85, 95, None, 'M', 'Italiano', 'Ipertensione', 'PAT014', 'stefano75', '1234562302', 'DOC001'),
-    ('Elena', 'Romano', '1998-12-01', 1.64, 59, None, 'F', 'Italiano', 'Nessuna', 'PAT015', 'elena98', '1234562303', 'DOC001')
+    ('Angelo', 'Galli', '1986-04-26', 1.70, 80, None, 'M', 'Italiano', 'Osa moderata', 'PAT010', 'pass333', '1234562228', 'DOC001'),
+    ('Giulia', 'Conti', '1963-08-10', 1.68, 58, None, 'F', 'Italiano', 'Nessuna', 'PAT011', 'giuly01', '1234562299', 'DOC001'),
+    ('Davide', 'Rizzi', '1957-03-18', 1.78, 75, None, 'M', 'Italiano', 'Allergie stagionali', 'PAT012', 'davidr', '1234562300', 'DOC001'),
+    ('Marta', 'De Luca', '1946-09-29', 1.66, 65, None, 'F', 'Italiano', 'Nessuna', 'PAT013', 'marta89', '1234562301', 'DOC001'),
+    ('Stefano', 'Barbieri', '1943-05-03', 1.85, 95, None, 'M', 'Italiano', 'Ipertensione', 'PAT014', 'stefano75', '1234562302', 'DOC001'),
+    ('Elena', 'Romano', '1947-12-01', 1.64, 59, None, 'F', 'Italiano', 'Nessuna', 'PAT015', 'elena98', '1234562303', 'DOC001')
 ])
 
 # Popola Appointments da 16 Maggio a 30 Giugno 2025
@@ -239,7 +239,7 @@ while current_date <= end_date:
 # Slot prenotati
 booked_slots = [
     ("2025-06-12", "09:30", "DOC001", "Mario Rossi", "booked", "PAT001", "Luca Bianchi"),
-    ("2025-06-07", "14:30", "DOC001", "Mario Rossi", "booked", "PAT002", "Lucia Garofalo"),
+    ("2025-06-09", "14:30", "DOC001", "Mario Rossi", "booked", "PAT002", "Lucia Garofalo"),
     ("2025-05-27", "08:30", "DOC001", "Mario Rossi", "booked", "PAT003", "Marco Verdi"),
     ("2025-06-04", "13:30", "DOC001", "Mario Rossi", "booked", "PAT004", "Chiara Neri"),
     ("2025-05-30", "11:30", "DOC001", "Mario Rossi", "booked", "PAT005", "Giorgio Fontana"),
@@ -252,7 +252,23 @@ booked_slots = [
     ("2025-05-30", "10:30", "DOC001", "Mario Rossi", "booked", "PAT012", "Davide Rizzi"),
     ("2025-06-03", "11:30", "DOC001", "Mario Rossi", "booked", "PAT013", "Marta De Luca"),
     ("2025-06-03", "14:30", "DOC001", "Mario Rossi", "booked", "PAT014", "Stefano Barbieri"),
+    ("2025-06-06", "15:30", "DOC001", "Mario Rossi", "booked", "PAT015", "Elena Romano"),
+    ("2025-06-09", "09:30", "DOC001", "Mario Rossi", "booked", "PAT001", "Luca Bianchi"),
+    ("2025-05-28", "14:30", "DOC001", "Mario Rossi", "booked", "PAT002", "Lucia Garofalo"),
+    ("2025-05-30", "09:30", "DOC001", "Mario Rossi", "booked", "PAT003", "Marco Verdi"),
+    ("2025-06-04", "11:30", "DOC001", "Mario Rossi", "booked", "PAT004", "Chiara Neri"),
+    ("2025-05-30", "16:30", "DOC001", "Mario Rossi", "booked", "PAT005", "Giorgio Fontana"),
+    ("2025-06-11", "09:30", "DOC001", "Mario Rossi", "booked", "PAT006", "Federica Russo"),
+    ("2025-05-29", "14:30", "DOC001", "Mario Rossi", "booked", "PAT007", "Valerio Bassi"),
+    ("2025-06-03", "08:30", "DOC001", "Mario Rossi", "booked", "PAT008", "Irene Ferri"),
+    ("2025-05-29", "12:30", "DOC001", "Mario Rossi", "booked", "PAT009", "Marco Esposito"),
+    ("2025-06-05", "16:30", "DOC001", "Mario Rossi", "booked", "PAT010", "Angelo Galli"),
+    ("2025-06-06", "11:30", "DOC001", "Mario Rossi", "booked", "PAT011", "Giulia Conti"),
+    ("2025-05-30", "11:30", "DOC001", "Mario Rossi", "booked", "PAT012", "Davide Rizzi"),
+    ("2025-06-03", "15:30", "DOC001", "Mario Rossi", "booked", "PAT013", "Marta De Luca"),
+    ("2025-06-03", "10:30", "DOC001", "Mario Rossi", "booked", "PAT014", "Stefano Barbieri"),
     ("2025-06-08", "15:30", "DOC001", "Mario Rossi", "booked", "PAT015", "Elena Romano"),
+
 ]
 for date, time_slot, doc_id, doctor_name, status, pat_id, pat_name in booked_slots:
     appointments.append((date, time_slot, doc_id, doctor_name, status, pat_id, pat_name))
@@ -267,7 +283,9 @@ VALUES (?, ?, ?, ?, ?, ?, ?)
 drugs = [
     ("PAT001", "Paracetamolo 500mg 2 volte al giorno", "2025-04-20", "2025-04-27"),
     ("PAT002", "Ibuprofene al bisogno", "2025-04-21", "2025-04-25"),
-    ("PAT003", "Salbutamolo spray 2 puff al bisogno", "2025-04-22", "2025-04-30")
+    ("PAT003", "Salbutamolo spray 2 puff al bisogno", "2025-04-22", "2025-04-30"),
+    ("PAT001", "Atorvastatina (Lipitor)", "2025-05-20", "2025-10-30"),
+    ("PAT001","Clopidogrel","2025-05-20","2025-10-30")
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Drugs (PatientID, Note, StartDate, EndDate)
@@ -276,10 +294,10 @@ VALUES (?, ?, ?, ?)
 
 # Inserimento Therapy
 therapies = [
-    ("PAT001", "Monitoraggio continuo con eventuale follow-up dopo 10 giorni"),
-    ("PAT002", "Controllo pressorio settimanale"),
-    ("PAT003", "Controllo asma trimestrale"),
-    ("PAT010", "CPAP_350_x7_gg")
+    ("PAT001", "Auto-adjusting CPAP (Auto-CPAP) with a range of 6-12 cmH₂O. Physiotherapy is recommended for mobility and light breathing exercises."),
+    ("PAT002", "CPAP 9 cmH₂O. Nasal spray (fluticasone) to improve CPAP tolerance (1 spray per nostril in the evening)."),
+    ("PAT003", "CPAP 6 cmH₂O. Use of an oral appliance (MAD) fitted by a sleep dentist is recommended."),
+    ("PAT010", "CPAP 10 cmH₂O")
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Therapy (PatientID, Note)
@@ -288,28 +306,27 @@ VALUES (?, ?)
 
 # Inserimento Indexes
 indexes = [
-    ("PAT001", "2025-04-20", 5.2, 4.1, 95.2, 88.5),
-    ("PAT001", "2025-04-19", 6.0, 3.5, 96.0, 89.0),
-    ("PAT001", "2025-04-18", 5.3, 4.1, 95.0, 87.0),
-    ("PAT001", "2025-04-17", 5.5, 4.0, 95.5, 90.0),
-    ("PAT002", "2025-04-21", 12.4, 8.7, 92.0, 84.3),
-    ("PAT010", "2025-04-22", 2.5, 1.8, 96.5, 90.0),
-    ("PAT011", "2025-04-22", 4.5, 0.7, 96.5, 90.0),
-    ("PAT021", "2025-04-22", 7.5, 1.3, 96.5, 90.0),
-    ("PAT009", "2025-04-24", 0.5, 1.5, 96.5, 90.0),
-    ("PAT009", "2025-04-24", 0.5, 1.5, 96.5, 90.0),
-    ("PAT009", "2025-04-25", 0.5, 1.5, 96.5, 90.0),
-    ("PAT009", "2025-04-26", 0.5, 1.5, 96.5, 90.0),
-    ("PAT009", "2025-04-27", 0.5, 1.5, 96.5, 90.0),
-    ("PAT009", "2025-04-28", 0.5, 1.5, 96.5, 90.0),
-    ("PAT009", "2025-04-29", 0.5, 1.5, 96.5, 90.0),
-    ("PAT009", "2025-04-30", 0.5, 1.5, 96.5, 90.0),
-    ("PAT010", "2025-04-24", 0.5, 1.5, 96.5, 90.0),
-    ("PAT010", "2025-04-25", 1, 1, 96.5, 90.0),
-    ("PAT010", "2025-04-26", 1.2, 1.5, 96.5, 90.0),
-    ("PAT010", "2025-04-27", 0.8, 7, 96.5, 90.0),
-    ("PAT010", "2025-04-28", 4, 8, 96.5, 90.0),
-    ("PAT010", "2025-04-29", 10, 15, 96.5, 90.0)
+    ("PAT001", "2025-05-26", 11, 4.1, 95.2, 88.5),
+    ("PAT001", "2025-05-27", 10, 3.5, 96.0, 89.0),
+    ("PAT001", "2025-05-28", 7, 4.1, 95.0, 87.0),
+    ("PAT001", "2025-05-29", 12, 4.0, 93.5, 89.7),
+    ("PAT011", "2025-05-25", 14, 8.7, 92.0, 89.3),
+    ("PAT011", "2025-05-27", 8, 1.8, 96.5, 90.0),
+    ("PAT011", "2025-05-28", 9, 0.7, 96.5, 90.0),
+    ("PAT009", "2025-05-26", 10, 1.5, 96.5, 90.0),
+    ("PAT009", "2025-05-23", 11.5, 1.5, 96.5, 90.0),
+    ("PAT009", "2025-05-24", 12.5, 1.5, 96.5, 89.0),
+    ("PAT009", "2025-05-25", 11.5, 1.5, 96.5, 90.0),
+    ("PAT009", "2025-05-26", 10.3, 1.5, 96.5, 90.0),
+    ("PAT009", "2025-05-27", 10.01, 1.5, 96.5, 90.0),
+    ("PAT009", "2025-05-28", 8.7, 1.5, 96.5, 90.0),
+    ("PAT009", "2025-05-29", 9, 1.5, 96.5, 90.0),
+    ("PAT010", "2025-05-24", 6.4, 1.5, 96.5, 90.0),
+    ("PAT010", "2025-05-25", 7, 1, 96.5, 90.0),
+    ("PAT010", "2025-05-26", 3, 1.5, 96.5, 90.0),
+    ("PAT010", "2025-05-27", 6, 7, 96.5, 90.0),
+    ("PAT010", "2025-05-28", 6.5, 8, 96.5, 90.0),
+    ("PAT010", "2025-05-29", 5, 15, 96.5, 90.0)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Indexes (PatientID, Date, ValueAHI, ValueODI, MeanSpO2, MinSpO2)
@@ -318,8 +335,9 @@ VALUES (?, ?, ?, ?, ?, ?)
 
 # Inserimento Questionnaire
 questionnaires = [
-    ("PAT001", "2025-04-20", 2, 1, "Slept well", 0, 0, 0, 0, 0, 1, "None", 0, "", 1, "75"),
-    ("PAT002", "2025-04-21", 3, 0, "Had trouble falling asleep", 1, 1, 1, 0, 2, 1, "Forgot to take medication", 1, "Please check my therapy", 0, "")
+    ("PAT001", "2025-05-25", 2, 1, "CPAP noise kept me awake", 0, 0, 0, 0, 0, 1, "None", 0, "", 1, "72"),
+    ("PAT001", "2025-04-26", 0, 1, "", 1, 1, 0, 1, 0, 1, "None", 0, "", 1, "75"),
+    ("PAT002", "2025-04-21", 3, 0, "Had trouble falling asleep", 1, 1, 1, 0, 2, 1, "Forgot to take medication", 1, "Can I increase the use of nasal spray?", 0, "")
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Questionnaire (PatientID, Date, Q1, Q2, Nota2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12, Q13)
@@ -328,8 +346,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
 # Inserimento Notifications
 notifications = [
-    ("PAT001", "Luca Bianchi", "REMINDER", "Ricorda di prendere la terapia", "2025-05-19 08:00:00", 0),
-    ("PAT002", "Lucia Garofalo", "DOCTOR_ALERT", "Contatta il tuo medico per un follow-up", "2025-05-20 09:00:00", 0)
+    ("PAT001", "Luca Bianchi", "REMINDER", "Remember to turn on your device tonight!", "2025-05-19 08:00:00", 0),
+    ("PAT002", "Lucia Garofalo", "DOCTOR_ALERT", "Book a visit with you doctor", "2025-05-20 09:00:00", 0)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Notifications (PatientID, PatientName, Type, Message, Timestamp, IsRead)
@@ -339,11 +357,11 @@ VALUES (?, ?, ?, ?, ?, ?)
 
 # OSA_Patients
 osa_patients = [
-    ("PAT001", "Luca", "Bianchi", "2025-04-20", 5),
-    ("PAT002", "Lucia", "Garofalo", "2025-04-21", 12),
-    ("PAT009", "Marco", "Esposito", "2025-04-24", 0),
-    ("PAT010", "Angelo", "Galli", "2025-04-22", 2),
-    ("PAT011", "Giulia", "Conti", "2025-04-22", 4)
+    ("PAT001", "Luca", "Verdi", "2025-04-20", 12),
+    ("PAT002", "Anna", "Greco", "2025-02-25", 14),
+    ("PAT009", "Marco", "Esposito", "2025-01-10", 9),
+    ("PAT010", "Angelo", "Galli", "2024-08-18", 5),
+    ("PAT011", "Giulia", "Conti", "2024-10-21", 9)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO OSA_Patients (PatientID, Name, Surname, Date, AHI)
@@ -352,9 +370,9 @@ VALUES (?, ?, ?, ?, ?)
 
 # Possible_Follow_Up_Patients
 possible_follow_up = [
-    ("PAT004", "Chiara", "Neri", "2025-04-21", 30),
-    ("PAT007", "Valerio", "Bassi", "2025-04-21", 25),
-    ("PAT008", "Irene", "Ferri", "2025-04-21", 28)
+    ("PAT004", "Chiara", "Neri", "2025-03-04", 85),
+    ("PAT007", "Valerio", "Bassi", "2025-02-27", 90),
+    ("PAT008", "Irene", "Ferri", "2025-04-25", 92)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Possible_Follow_Up_Patients (PatientID, Name, Surname, Date, Days_since_last_OSA)
@@ -363,9 +381,9 @@ VALUES (?, ?, ?, ?, ?)
 
 # Follow_Up_Patients
 follow_up_patients = [
-    ("PAT006", "Federica", "Russo", "2025-04-21", 85, 8),
-    ("PAT012", "Davide", "Rizzi", "2025-04-21", 82, 7),
-    ("PAT014", "Stefano", "Barbieri", "2025-04-21", 80, 9)
+    ("PAT006", "Federica", "Russo", "2025-04-21", 89, 2),
+    ("PAT012", "Davide", "Rizzi", "2025-04-21", 90, 4),
+    ("PAT014", "Stefano", "Barbieri", "2025-04-21", 91, 1)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Follow_Up_Patients (PatientID, Name, Surname, Date, SpO2_min, ODI)
@@ -374,10 +392,10 @@ VALUES (?, ?, ?, ?, ?, ?)
 
 # Seven_days_patients_ok
 seven_ok = [
-    ("PAT003", "Marco", "Verdi", "2025-04-21", 7),
-    ("PAT005", "Giorgio", "Fontana", "2025-04-21", 7),
-    ("PAT013", "Marta", "De Luca", "2025-04-21", 7),
-    ("PAT015", "Elena", "Romano", "2025-04-21", 7)
+    ("PAT003", "Marco", "Verdi", "2025-03-21", 7),
+    ("PAT005", "Giorgio", "Fontana", "2025-02-15", 10),
+    ("PAT013", "Marta", "De Luca", "2025-05-05", 12),
+    ("PAT015", "Elena", "Romano", "2024-06-04", 8)
 ]
 cursor.executemany("""
 INSERT OR IGNORE INTO Seven_days_patients_ok (PatientID, Name, Surname, Date, Days_since_last_OSA)
