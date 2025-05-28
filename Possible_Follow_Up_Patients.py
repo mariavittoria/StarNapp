@@ -3,8 +3,30 @@ import os
 from PIL import Image
 import sqlite3
 from tkinter import ttk
+import tkinter as tk
 from patient_indexes_view import PatientIndexes
 from datetime import datetime
+
+def create_tooltip(widget, text):
+        tooltip = tk.Toplevel(widget)
+        tooltip.wm_overrideredirect(True)  # Nessun bordo/finestra
+        tooltip.wm_geometry("+0+0")  # Posizione iniziale
+
+        label = tk.Label(tooltip, text=text, background="black", foreground="white", padx=5, pady=2, borderwidth=1, relief="solid", font=("Arial", 10))
+        label.pack()
+
+        def enter(event):
+            x = widget.winfo_rootx() + widget.winfo_width() + 5
+            y = widget.winfo_rooty()
+            tooltip.wm_geometry(f"+{x}+{y}")
+            tooltip.deiconify()
+
+        def leave(event):
+            tooltip.withdraw()
+
+        tooltip.withdraw()
+        widget.bind("<Enter>", enter)
+        widget.bind("<Leave>", leave)
 
 class PossibleFollowUpPatientsView(ctk.CTkFrame):
     def __init__(self, parent_frame, doctor_id):
@@ -67,7 +89,7 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
             header_label = ctk.CTkLabel(
                 self.table_frame,
                 text=header,    
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
                 fg_color="#73C8AE",
                 corner_radius=5,
@@ -112,7 +134,7 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
                 id_label = ctk.CTkLabel(
                     self.table_frame,
                     text=patient_id,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -124,7 +146,7 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
                 name_label = ctk.CTkLabel(
                     self.table_frame,
                     text=name,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -136,7 +158,7 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
                 surname_label = ctk.CTkLabel(
                     self.table_frame,
                     text=surname,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -148,7 +170,7 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
                 days_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(days) if days is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -207,67 +229,125 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
+        # Create main content frame
+        content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Left frame for buttons
+        left_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
         # Title
         title = ctk.CTkLabel(
-            self.main_frame,
-            text=f"Patient: {name} {surname}",
+            left_frame,
+            text=f"{name} {surname}",
             font=("Arial", 24, "bold"),
             text_color="#046A38"
         )
         title.pack(pady=30)
 
         # Create a frame for buttons to center them
-        button_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        button_frame = ctk.CTkFrame(left_frame, fg_color="transparent")
         button_frame.pack(pady=20)
 
         # AHI button
         ahi_button = ctk.CTkButton(
             button_frame,
             text="AHI",
-            width=200,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.open_ahi(patient_id, name, surname)
         )
         ahi_button.pack(pady=15)
+
+        ahi_info = ctk.CTkLabel(
+            ahi_button, 
+            text="ⓘ", 
+            text_color="white", 
+            font=("Arial", 16), 
+            width=12,
+            height=12,  
+            corner_radius=12,
+            fg_color="gray"
+        )
+        ahi_info.place(relx=0.9, rely=0.5, anchor="center")
+        ahi_info.configure(cursor="hand2")
+        create_tooltip(ahi_info, "Apnea Hypoapnea Index")
 
         # ODI button
         odi_button = ctk.CTkButton(
             button_frame,
             text="ODI",
-            width=200,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.open_odi(patient_id, name, surname)
         )
         odi_button.pack(pady=15)
+
+        odi_info = ctk.CTkLabel(
+            odi_button, 
+            text="ⓘ", 
+            text_color="white", 
+            font=("Arial", 16), 
+            width=12,
+            height=12,  
+            corner_radius=12,
+            fg_color="gray"
+        )
+        odi_info.place(relx=0.9, rely=0.5, anchor="center")
+        odi_info.configure(cursor="hand2")
+        create_tooltip(odi_info, "Oxygen Desaturation Index")
 
         # SpO2 button
         spo2_button = ctk.CTkButton(
             button_frame,
             text="SpO₂",
-            width=200,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.open_spo2(patient_id, name, surname)
         )
         spo2_button.pack(pady=15)
 
+        spo2_info = ctk.CTkLabel(
+            spo2_button, 
+            text="ⓘ", 
+            text_color="white", 
+            font=("Arial", 16), 
+            width=12,
+            height=12,  
+            corner_radius=12,
+            fg_color="gray"
+        )
+        spo2_info.place(relx=0.9, rely=0.5, anchor="center")
+        spo2_info.configure(cursor="hand2")
+        create_tooltip(spo2_info, "Oxygen Saturation")
+
         # Actions frame
-        actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        actions_frame = ctk.CTkFrame(left_frame, fg_color="transparent")
         actions_frame.pack(pady=30)
 
         # Plan a Visit button
         self.visit_button = ctk.CTkButton(
             actions_frame,
             text="Plan a Visit",
-            width=200,
+            width=330,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda pid=patient_id, n=name, s=surname: self.plan_visit(pid, n, s)
         )
         self.visit_button.pack(pady=15)
@@ -279,10 +359,12 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
         therapy_button = ctk.CTkButton(
             actions_frame,
             text="View/Modify Therapy",
-            width=200,
+            width=330,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.view_therapy(patient_id, name, surname)
         )
         therapy_button.pack(pady=15)
@@ -291,25 +373,121 @@ class PossibleFollowUpPatientsView(ctk.CTkFrame):
         questionnaire_button = ctk.CTkButton(
             actions_frame,
             text="View Patient Questionnaire",
-            width=200,
+            width=330,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.view_questionnaire(patient_id, name, surname)
         )
         questionnaire_button.pack(pady=15)
 
-        # Inserisci in follow up  
+        # Insert in follow up button
         followup_button = ctk.CTkButton(
             actions_frame,
             text="Insert in Follow Up",
-            width=200,
+            width=330,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
+            font=("Arial", 16),
             text_color="white",
             command=lambda: self.insert_in_follow_up(patient_id, name, surname)
         )
         followup_button.pack(pady=15)
+
+        # Right frame for patient info
+        right_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10)
+        right_frame.pack(side="right", fill="both", expand=True, padx=(10, 0))
+
+        # Patient info header
+        info_header = ctk.CTkFrame(right_frame, fg_color="#73C8AE", corner_radius=10)
+        info_header.pack(fill="x", padx=10, pady=10)
+
+        info_title = ctk.CTkLabel(
+            info_header,
+            text="Patient Information",
+            font=("Arial", 16, "bold"),
+            text_color="white"
+        )
+        info_title.pack(pady=10)
+
+        # Get patient information from database
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT Name, Surname, dateOfBirth, height, weight, age, Gender, 
+                       Nationality, ClinicalHistory, PhoneNumber
+                FROM Patients
+                WHERE PatientID = ?
+            """, (patient_id,))
+            
+            patient_info = cursor.fetchone()
+            
+            if patient_info:
+                # Create scrollable frame for patient info
+                info_canvas = ctk.CTkCanvas(right_frame, bg="white", highlightthickness=0)
+                info_scrollbar = ttk.Scrollbar(right_frame, orient="vertical", command=info_canvas.yview)
+                info_scrollable = ctk.CTkFrame(info_canvas, fg_color="white")
+                
+                info_scrollable.bind(
+                    "<Configure>",
+                    lambda e: info_canvas.configure(scrollregion=info_canvas.bbox("all"))
+                )
+                
+                info_canvas.create_window((0, 0), window=info_scrollable, anchor="nw")
+                info_canvas.configure(yscrollcommand=info_scrollbar.set)
+                
+                info_canvas.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+                info_scrollbar.pack(side="right", fill="y", pady=10)
+                
+                # Display patient information
+                fields = [
+                    ("Name", patient_info[0]),
+                    ("Surname", patient_info[1]),
+                    ("Date of Birth", patient_info[2]),
+                    ("Height", f"{float(patient_info[3]):.2f} m" if patient_info[3] else "N/A"),
+                    ("Weight", f"{patient_info[4]} kg" if patient_info[4] else "N/A"),
+                    ("Age", str(patient_info[5]) if patient_info[5] else "N/A"),
+                    ("Gender", patient_info[6]),
+                    ("Nationality", patient_info[7]),
+                    ("Clinical History", patient_info[8] if patient_info[8] else "N/A"),
+                    ("Phone Number", patient_info[9] if patient_info[9] else "N/A")
+                ]
+                
+                for i, (field, value) in enumerate(fields):
+                    field_frame = ctk.CTkFrame(info_scrollable, fg_color="white")
+                    field_frame.pack(fill="x", padx=10, pady=5)
+                    
+                    field_label = ctk.CTkLabel(
+                        field_frame,
+                        text=f"{field}:",
+                        font=("Arial", 16, "bold"),
+                        text_color="#046A38",
+                        anchor="w"
+                    )
+                    field_label.pack(side="left", padx=10)
+                    
+                    value_label = ctk.CTkLabel(
+                        field_frame,
+                        text=str(value),
+                        font=("Arial", 16),
+                        text_color="#046A38",
+                        anchor="w"
+                    )
+                    value_label.pack(side="left", padx=10)
+                
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                right_frame,
+                text=f"Error loading patient information: {str(e)}",
+                text_color="red"
+            )
+            error_label.pack(pady=20)
+        finally:
+            conn.close()
 
     def check_visit_button_state(self, patient_id):
         conn = sqlite3.connect("Database_proj.db")

@@ -37,11 +37,12 @@ class VisitDoctorView(ctk.CTkFrame):
         calendar_btn = ctk.CTkButton(
             buttons_frame,
             text="View Calendar",
-            width=200,
-            height=40,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=self.show_calendar
         )
         calendar_btn.pack(pady=15)
@@ -50,11 +51,12 @@ class VisitDoctorView(ctk.CTkFrame):
         fix_visit_btn = ctk.CTkButton(
             buttons_frame,
             text="Fix an appointment",
-            width=200,
-            height=40,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=self.show_patient_list
         )
         fix_visit_btn.pack(pady=15)
@@ -136,7 +138,7 @@ class VisitDoctorView(ctk.CTkFrame):
             day_label = ctk.CTkLabel(
                 day_frame,
                 text=current_day.strftime("%A\n%d %B"),
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="#046A38"
             )
             day_label.pack(pady=10)
@@ -156,7 +158,8 @@ class VisitDoctorView(ctk.CTkFrame):
                     day_frame,
                     text=time,
                     width=100,
-                    height=30,
+                    height=50,
+                    font=("Arial", 16),
                     fg_color="#73C8AE" if not is_booked else "#CCCCCC",
                     hover_color="#046A38" if not is_booked else "#999999",
                     text_color="white",
@@ -466,7 +469,7 @@ class VisitDoctorView(ctk.CTkFrame):
             header_label = ctk.CTkLabel(
                 table_frame,
                 text=header,    
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
                 fg_color="#73C8AE",
                 corner_radius=5,
@@ -506,7 +509,7 @@ class VisitDoctorView(ctk.CTkFrame):
                 id_label = ctk.CTkLabel(
                     table_frame,
                     text=patient_id,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -518,7 +521,7 @@ class VisitDoctorView(ctk.CTkFrame):
                 name_label = ctk.CTkLabel(
                     table_frame,
                     text=Name,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -530,7 +533,7 @@ class VisitDoctorView(ctk.CTkFrame):
                 surname_label = ctk.CTkLabel(
                     table_frame,
                     text=Surname,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -542,7 +545,7 @@ class VisitDoctorView(ctk.CTkFrame):
                 source_label = ctk.CTkLabel(
                     table_frame,
                     text=source,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -578,8 +581,9 @@ class VisitDoctorView(ctk.CTkFrame):
                 notify_btn = ctk.CTkButton(
                     action_frame,
                     text="Notify",
-                    width=80,
-                    height=30,
+                    width=100,
+                    height=40,
+                    font=("Arial", 16),
                     fg_color=button_color,
                     hover_color=hover_color,
                     text_color="white",

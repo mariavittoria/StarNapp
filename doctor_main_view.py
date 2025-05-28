@@ -16,7 +16,7 @@ class DoctorMainView(ctk.CTk):
 
 
         self.title("Doctor Main View")
-        self.geometry("1200x800")
+        self.geometry("1200x1000")
 
         # Layout setup
         self.grid_rowconfigure(0, weight=1)
@@ -51,6 +51,7 @@ class DoctorMainView(ctk.CTk):
                 self.sidebar, 
                 text=text, 
                 height=40,
+                font=("Arial", 16),
                 command=lambda t=text, c=command: self.select_sidebar_button(t, c),
                 fg_color="transparent",
                 text_color="#046A38",  # Dark green text

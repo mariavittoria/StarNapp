@@ -62,12 +62,12 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
             self.table_frame.grid_columnconfigure(i, weight=1)
 
         # Headers
-        headers = ["Patient ID", "Name", "Surname", "Days since last OSA", "Details"]
+        headers = ["Patient ID", "Name", "Surname", "Days since last event", "Details"]
         for i, header in enumerate(headers):
             header_label = ctk.CTkLabel(
                 self.table_frame,
                 text=header,    
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
                 fg_color="#73C8AE",
                 corner_radius=5,
@@ -112,7 +112,7 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
                 id_label = ctk.CTkLabel(
                     self.table_frame,
                     text=patient_id,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -124,7 +124,7 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
                 name_label = ctk.CTkLabel(
                     self.table_frame,
                     text=name,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -136,7 +136,7 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
                 surname_label = ctk.CTkLabel(
                     self.table_frame,
                     text=surname,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -148,7 +148,7 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
                 days_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(days) if days is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -207,17 +207,25 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
+        # Create main content frame
+        content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Left frame for buttons
+        left_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
         # Title
         title = ctk.CTkLabel(
-            self.main_frame,
-            text=f"Patient: {name} {surname}",
+            left_frame,
+            text=f"{name} {surname}",
             font=("Arial", 24, "bold"),
             text_color="#046A38"
         )
         title.pack(pady=30)
 
         # Create a frame for buttons to center them
-        button_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        button_frame = ctk.CTkFrame(left_frame, fg_color="transparent")
         button_frame.pack(pady=20)
 
         # AHI button
@@ -257,7 +265,7 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
         spo2_button.pack(pady=15)
 
         # Actions frame
-        actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        actions_frame = ctk.CTkFrame(left_frame, fg_color="transparent")
         actions_frame.pack(pady=30)
 
         # Plan a Visit button
@@ -298,6 +306,99 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
             command=lambda: self.view_questionnaire(patient_id, name, surname)
         )
         questionnaire_button.pack(pady=15)
+
+        # Right frame for patient info
+        right_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10, width=300)
+        right_frame.pack(side="right", fill="y", expand=False, padx=(10, 0))
+        right_frame.pack_propagate(False)  # Prevent the frame from shrinking to fit its contents
+
+        # Patient info header
+        info_header = ctk.CTkFrame(right_frame, fg_color="#73C8AE", corner_radius=10)
+        info_header.pack(fill="x", padx=10, pady=10)
+
+        info_title = ctk.CTkLabel(
+            info_header,
+            text="Patient Information",
+            font=("Arial", 16, "bold"),
+            text_color="white"
+        )
+        info_title.pack(pady=10)
+
+        # Get patient information from database
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT Name, Surname, dateOfBirth, height, weight, age, Gender, 
+                       Nationality, ClinicalHistory, PhoneNumber
+                FROM Patients
+                WHERE PatientID = ?
+            """, (patient_id,))
+            
+            patient_info = cursor.fetchone()
+            
+            if patient_info:
+                # Create scrollable frame for patient info
+                info_canvas = ctk.CTkCanvas(right_frame, bg="white", highlightthickness=0)
+                info_scrollbar = ttk.Scrollbar(right_frame, orient="vertical", command=info_canvas.yview)
+                info_scrollable = ctk.CTkFrame(info_canvas, fg_color="white")
+                
+                info_scrollable.bind(
+                    "<Configure>",
+                    lambda e: info_canvas.configure(scrollregion=info_canvas.bbox("all"))
+                )
+                
+                info_canvas.create_window((0, 0), window=info_scrollable, anchor="nw")
+                info_canvas.configure(yscrollcommand=info_scrollbar.set)
+                
+                info_canvas.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+                info_scrollbar.pack(side="right", fill="y", pady=10)
+                
+                # Display patient information
+                fields = [
+                    ("Name", patient_info[0]),
+                    ("Surname", patient_info[1]),
+                    ("Date of Birth", patient_info[2]),
+                    ("Height", f"{float(patient_info[3]):.2f} m" if patient_info[3] else "N/A"),
+                    ("Weight", f"{patient_info[4]} kg" if patient_info[4] else "N/A"),
+                    ("Age", str(patient_info[5]) if patient_info[5] else "N/A"),
+                    ("Gender", patient_info[6]),
+                    ("Nationality", patient_info[7]),
+                    ("Clinical History", patient_info[8] if patient_info[8] else "N/A"),
+                    ("Phone Number", patient_info[9] if patient_info[9] else "N/A")
+                ]
+                
+                for i, (field, value) in enumerate(fields):
+                    field_frame = ctk.CTkFrame(info_scrollable, fg_color="white")
+                    field_frame.pack(fill="x", padx=10, pady=5)
+                    
+                    field_label = ctk.CTkLabel(
+                        field_frame,
+                        text=f"{field}:",
+                        font=("Arial", 14, "bold"),
+                        text_color="#046A38",
+                        anchor="w"
+                    )
+                    field_label.pack(side="left", padx=10)
+                    
+                    value_label = ctk.CTkLabel(
+                        field_frame,
+                        text=str(value),
+                        font=("Arial", 14),
+                        text_color="#046A38",
+                        anchor="w"
+                    )
+                    value_label.pack(side="left", padx=10)
+                
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                right_frame,
+                text=f"Error loading patient information: {str(e)}",
+                text_color="red"
+            )
+            error_label.pack(pady=20)
+        finally:
+            conn.close()
 
     def check_visit_button_state(self, patient_id):
         conn = sqlite3.connect("Database_proj.db")

@@ -21,7 +21,7 @@ class PatientIndexes(ctk.CTkFrame):
         for widget in self.winfo_children():
             widget.destroy()
 
-        title = ctk.CTkLabel(self, text="Select an Index", font=("Arial", 24, "bold"), text_color="#046A38")
+        title = ctk.CTkLabel(self, text="Select an Index", font=("Arial", 28, "bold"), text_color="#046A38")
         title.pack(pady=30)
 
         # Create a frame for buttons to center them
@@ -31,11 +31,13 @@ class PatientIndexes(ctk.CTkFrame):
         # AHI button
         ahi_button = ctk.CTkButton(
             button_frame,
-            text="AHI",
-            width=200,
+            text="AHI - Apnea Hypoapnea Index",
+            width=330,
+            height=50,
             fg_color="#73C8AE",  # Light green
             hover_color="#046A38",  # Dark green
             text_color="white",
+            font=("Arial", 16),
             command=self.open_ahi
         )
         ahi_button.pack(pady=15)
@@ -43,11 +45,13 @@ class PatientIndexes(ctk.CTkFrame):
         # ODI button
         odi_button = ctk.CTkButton(
             button_frame,
-            text="ODI",
-            width=200,
+            text="ODI - Oxygen Desaturation Index",
+            width=330,
+            height=50,
             fg_color="#73C8AE",  # Light green
             hover_color="#046A38",  # Dark green
             text_color="white",
+            font=("Arial", 16),
             command=self.open_odi
         )
         odi_button.pack(pady=15)
@@ -55,11 +59,13 @@ class PatientIndexes(ctk.CTkFrame):
         # SpO2 button
         spo2_button = ctk.CTkButton(
             button_frame,
-            text="SpO₂",
-            width=200,
+            text="SpO₂ - Oxygen Saturation",
+            width=330,
+            height=50,
             fg_color="#73C8AE",  # Light green
             hover_color="#046A38",  # Dark green
             text_color="white",
+            font=("Arial", 16),
             command=self.open_spo2
         )
         spo2_button.pack(pady=15)

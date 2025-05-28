@@ -204,21 +204,21 @@ cursor.executemany("""
 INSERT OR IGNORE INTO Patients (Name, Surname, dateOfBirth, height, weight, Age, Gender, Nationality, ClinicalHistory, PatientID, PatientPassword, PhoneNumber, DoctorID)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 """, [
-    ('Luca', 'Verdi', '1960-05-15', 1.75, 70, None, 'M', 'Italiano', 'Nessuna', 'PAT001', 'password123', '1234567890', 'DOC001'),
-    ('Lucia', 'Garofalo', '1956-06-15', 1.65, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT002', '345678', '1234567899', 'DOC001'),
-    ('Marco', 'Verdi', '1952-03-22', 1.80, 85, None, 'M', 'Italiano', 'Asma lieve', 'PAT003', 'pass333', '1234562222', 'DOC001'),
-    ('Chiara', 'Neri', '1938-01-12', 1.68, 62, None, 'F', 'Italiano', 'Nessuna', 'PAT004', 'chiara90', '1234562233', 'DOC001'),
-    ('Giorgio', 'Fontana', '1944-07-08', 1.82, 88, None, 'M', 'Italiano', 'Ipertensione', 'PAT005', 'giorgio85', '1234562244', 'DOC001'),
-    ('Federica', 'Russo', '1947-10-22', 1.60, 55, None, 'F', 'Italiano', 'Nessuna', 'PAT006', 'fede97', '1234562255', 'DOC001'),
-    ('Valerio', 'Bassi', '1962-11-15', 1.75, 78, None, 'M', 'Italiano', 'Diabete', 'PAT007', 'valbass80', '1234562266', 'DOC001'),
-    ('Irene', 'Ferri', '1953-02-25', 1.70, 60, None, 'F', 'Italiano', 'Nessuna', 'PAT008', 'irenef95', '1234562277', 'DOC001'),
-    ('Marco', 'Esposito', '1956-06-16', 1.87, 90, None, 'M', 'Italiano', 'Osa moderata', 'PAT009', 'pass333', '1234562226', 'DOC001'),
-    ('Angelo', 'Galli', '1986-04-26', 1.70, 80, None, 'M', 'Italiano', 'Osa moderata', 'PAT010', 'pass333', '1234562228', 'DOC001'),
-    ('Giulia', 'Conti', '1963-08-10', 1.68, 58, None, 'F', 'Italiano', 'Nessuna', 'PAT011', 'giuly01', '1234562299', 'DOC001'),
-    ('Davide', 'Rizzi', '1957-03-18', 1.78, 75, None, 'M', 'Italiano', 'Allergie stagionali', 'PAT012', 'davidr', '1234562300', 'DOC001'),
-    ('Marta', 'De Luca', '1946-09-29', 1.66, 65, None, 'F', 'Italiano', 'Nessuna', 'PAT013', 'marta89', '1234562301', 'DOC001'),
-    ('Stefano', 'Barbieri', '1943-05-03', 1.85, 95, None, 'M', 'Italiano', 'Ipertensione', 'PAT014', 'stefano75', '1234562302', 'DOC001'),
-    ('Elena', 'Romano', '1947-12-01', 1.64, 59, None, 'F', 'Italiano', 'Nessuna', 'PAT015', 'elena98', '1234562303', 'DOC001')
+    ('Luca', 'Verdi', '1960-05-15', 1.75, 70, None, 'M', 'Italian', 'Ischemia', 'PAT001', 'password123', '1234567890', 'DOC001'),
+    ('Lucia', 'Garofalo', '1956-06-15', 1.65, 60, None, 'F', 'Italian', 'None', 'PAT002', '345678', '1234567899', 'DOC001'),
+    ('Marco', 'Verdi', '1952-03-22', 1.80, 85, None, 'M', 'Italian', 'Asthma', 'PAT003', 'pass333', '1234562222', 'DOC001'),
+    ('Chiara', 'Neri', '1938-01-12', 1.68, 62, None, 'F', 'Italian', 'Stroke', 'PAT004', 'chiara90', '1234562233', 'DOC001'),
+    ('Giorgio', 'Fontana', '1944-07-08', 1.82, 88, None, 'M', 'Italian', 'Hypertension', 'PAT005', 'giorgio85', '1234562244', 'DOC001'),
+    ('Federica', 'Russo', '1947-10-22', 1.60, 55, None, 'F', 'Italian', 'None', 'PAT006', 'fede97', '1234562255', 'DOC001'),
+    ('Valerio', 'Bassi', '1962-11-15', 1.75, 78, None, 'M', 'Italian', 'Diabete', 'PAT007', 'valbass80', '1234562266', 'DOC001'),
+    ('Irene', 'Ferri', '1953-02-25', 1.70, 60, None, 'F', 'Italian', 'None', 'PAT008', 'irenef95', '1234562277', 'DOC001'),
+    ('Marco', 'Esposito', '1956-06-16', 1.87, 90, None, 'M', 'Italian', 'Hypertension', 'PAT009', 'pass333', '1234562226', 'DOC001'),
+    ('Angelo', 'Galli', '1986-04-26', 1.70, 80, None, 'M', 'Italian', 'Stroke', 'PAT010', 'pass333', '1234562228', 'DOC001'),
+    ('Giulia', 'Conti', '1963-08-10', 1.68, 58, None, 'F', 'Italian', 'None', 'PAT011', 'giuly01', '1234562299', 'DOC001'),
+    ('Davide', 'Rizzi', '1957-03-18', 1.78, 75, None, 'M', 'Italian', 'Seasonal Allergies', 'PAT012', 'davidr', '1234562300', 'DOC001'),
+    ('Marta', 'De Luca', '1946-09-29', 1.66, 65, None, 'F', 'Italian', 'None', 'PAT013', 'marta89', '1234562301', 'DOC001'),
+    ('Stefano', 'Barbieri', '1943-05-03', 1.85, 95, None, 'M', 'Italian', 'High blood pressure', 'PAT014', 'stefano75', '1234562302', 'DOC001'),
+    ('Elena', 'Romano', '1947-12-01', 1.64, 59, None, 'F', 'Italian', 'None', 'PAT015', 'elena98', '1234562303', 'DOC001')
 ])
 
 # Popola Appointments da 16 Maggio a 30 Giugno 2025

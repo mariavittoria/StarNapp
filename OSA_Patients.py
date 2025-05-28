@@ -3,6 +3,7 @@ import os
 from PIL import Image
 import sqlite3
 from tkinter import ttk
+import tkinter as tk
 from patient_indexes_view import PatientIndexes
 import matplotlib
 matplotlib.use("TkAgg")
@@ -11,6 +12,28 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import datetime
 
+
+def create_tooltip(widget, text):
+        tooltip = tk.Toplevel(widget)
+        tooltip.wm_overrideredirect(True)  # Nessun bordo/finestra
+        tooltip.wm_geometry("+0+0")  # Posizione iniziale
+
+        label = tk.Label(tooltip, text=text, background="black", foreground="white", padx=5, pady=2, borderwidth=1, relief="solid", font=("Arial", 10))
+        label.pack()
+
+        def enter(event):
+            x = widget.winfo_rootx() + widget.winfo_width() + 5
+            y = widget.winfo_rooty()
+            tooltip.wm_geometry(f"+{x}+{y}")
+            tooltip.deiconify()
+
+        def leave(event):
+            tooltip.withdraw()
+
+        tooltip.withdraw()
+        widget.bind("<Enter>", enter)
+        widget.bind("<Leave>", leave)
+        
 class OSAPatientsView(ctk.CTkFrame):
     def __init__(self, parent_frame, doctor_id):
         super().__init__(parent_frame)
@@ -19,15 +42,33 @@ class OSAPatientsView(ctk.CTkFrame):
         # Configure the frame with light blue-green background
         self.configure(fg_color="#E8F5F2")
         
+        # Title frame
+        title_frame = ctk.CTkFrame(self, fg_color="transparent")
+        title_frame.pack(pady=20)
+
         # Title
         title = ctk.CTkLabel(
-            self, 
+            title_frame, 
             text="OSA Patients", 
             font=("Arial", 24, "bold"), 
             text_color="#046A38"
         )
-        title.pack(pady=20)
-        
+        title.pack(side="left", padx=(0, 10))
+
+        # Title info
+        title_info = ctk.CTkLabel(
+            title_frame,
+            text="ⓘ",
+            text_color="#046A38",
+            font=("Arial", 16),
+            width=24,
+            height=24,
+            corner_radius=12,
+            fg_color="transparent"
+        )
+        title_info.pack(side="left")
+        create_tooltip(title_info, "Obstructive Sleep Apnea")
+
         # Create table frame with white background and rounded corners
         table_frame = ctk.CTkFrame(self, fg_color="white", corner_radius=10)
         table_frame.pack(padx=20, pady=20, fill="both", expand=True)
@@ -69,16 +110,33 @@ class OSAPatientsView(ctk.CTkFrame):
         # Headers
         headers = ["Patient ID", "Name", "Surname", "AHI", "Details"]
         for i, header in enumerate(headers):
+            header_frame = ctk.CTkFrame(self.table_frame, fg_color="#73C8AE", corner_radius=5, height=40)
+            header_frame.grid(row=0, column=i, padx=2, pady=2, sticky="nsew")
+            header_frame.grid_columnconfigure(0, weight=1)
+            
             header_label = ctk.CTkLabel(
-                self.table_frame,
+                header_frame,
                 text=header,    
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
-                fg_color="#73C8AE",
-                corner_radius=5,
-                height=40
+                fg_color="transparent",
+                anchor="center"
             )
-            header_label.grid(row=0, column=i, padx=2, pady=2, sticky="nsew")
+            header_label.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+            if header == "AHI":
+                header_info = ctk.CTkLabel(
+                    header_frame,
+                    text="ⓘ",
+                    text_color="white",
+                    font=("Arial", 16),
+                    width=24,
+                    height=24,
+                    corner_radius=12,
+                    fg_color="transparent"
+                )
+                header_info.grid(row=0,pady=10, sticky="e")
+                create_tooltip(header_info, "Apnea Hypoapnea Index")
 
         # Load patients
         self.load_patients(doctor_id)
@@ -117,7 +175,7 @@ class OSAPatientsView(ctk.CTkFrame):
                 id_label = ctk.CTkLabel(
                     self.table_frame,
                     text=patient_id,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -129,7 +187,7 @@ class OSAPatientsView(ctk.CTkFrame):
                 name_label = ctk.CTkLabel(
                     self.table_frame,
                     text=name,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -141,7 +199,7 @@ class OSAPatientsView(ctk.CTkFrame):
                 surname_label = ctk.CTkLabel(
                     self.table_frame,
                     text=surname,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -153,7 +211,7 @@ class OSAPatientsView(ctk.CTkFrame):
                 ahi_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(ahi) if ahi is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -212,79 +270,122 @@ class OSAPatientsView(ctk.CTkFrame):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
+        # Create main content frame
+        content_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        content_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        # Left frame for buttons
+        left_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
+
         # Title
         title = ctk.CTkLabel(
-            self.main_frame,
-            text=f"Patient: {name} {surname}",
+            left_frame,
+            text=f"{name} {surname}",
             font=("Arial", 24, "bold"),
             text_color="#046A38"
         )
         title.pack(pady=30)
 
         # Create a frame for buttons to center them
-        button_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
+        button_frame = ctk.CTkFrame(left_frame, fg_color="transparent")
         button_frame.pack(pady=20)
 
         # AHI button
         ahi_button = ctk.CTkButton(
             button_frame,
             text="AHI",
-            width=200,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.open_ahi(patient_id, name, surname)
         )
         ahi_button.pack(pady=15)
+
+        ahi_info = ctk.CTkLabel(
+            ahi_button, 
+            text="ⓘ", 
+            text_color="white", 
+            font=("Arial", 16), 
+            width=12,
+            height=12,  
+            corner_radius=12,
+            fg_color="gray"
+        )
+        ahi_info.place(relx=0.9, rely=0.5, anchor="center")
+        ahi_info.configure(cursor="hand2")
+        create_tooltip(ahi_info, "Apnea Hypoapnea Index")
 
         # ODI button
         odi_button = ctk.CTkButton(
             button_frame,
             text="ODI",
-            width=200,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.open_odi(patient_id, name, surname)
         )
         odi_button.pack(pady=15)
+
+        odi_info = ctk.CTkLabel(
+            odi_button, 
+            text="ⓘ", 
+            text_color="white", 
+            font=("Arial", 16), 
+            width=12,
+            height=12,  
+            corner_radius=12,
+            fg_color="gray"
+        )
+        odi_info.place(relx=0.9, rely=0.5, anchor="center")
+        odi_info.configure(cursor="hand2")
+        create_tooltip(odi_info, "Oxygen Desaturation Index")
 
         # SpO2 button
         spo2_button = ctk.CTkButton(
             button_frame,
             text="SpO₂",
-            width=200,
+            width=250,
+            height=50,
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
+            font=("Arial", 16),
             command=lambda: self.open_spo2(patient_id, name, surname)
         )
         spo2_button.pack(pady=15)
 
-        # Actions frame
-        self.actions_frame = ctk.CTkFrame(self.main_frame, fg_color="transparent")
-        self.actions_frame.pack(pady=30)
-
-        # Plan a Visit button
-        self.visit_button = ctk.CTkButton(
-            self.actions_frame,
-            text="Plan a Visit",
-            width=200,
-            fg_color="#73C8AE",
-            hover_color="#046A38",
-            text_color="white",
-            command=lambda pid=patient_id, n=name, s=surname: self.plan_visit(pid, name, surname)
+        spo2_info = ctk.CTkLabel(
+            spo2_button, 
+            text="ⓘ", 
+            text_color="white", 
+            font=("Arial", 16), 
+            width=12,
+            height=12,  
+            corner_radius=12,
+            fg_color="gray"
         )
-        self.visit_button.pack(pady=15)
+        spo2_info.place(relx=0.9, rely=0.5, anchor="center")
+        spo2_info.configure(cursor="hand2")
+        create_tooltip(spo2_info, "Oxygen Saturation")
 
-        # Check if button should be disabled
-        self.check_visit_button_state(patient_id)
+        # Actions frame
+        self.actions_frame = ctk.CTkFrame(left_frame, fg_color="transparent")
+        self.actions_frame.pack(pady=30)
 
         # View/Modify Therapy button
         therapy_button = ctk.CTkButton(
             self.actions_frame,
             text="View/Modify Therapy",
-            width=200,
+            width=330,
+            height=50,
+            font=("Arial", 16),
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
@@ -296,13 +397,125 @@ class OSAPatientsView(ctk.CTkFrame):
         questionnaire_button = ctk.CTkButton(
             self.actions_frame,
             text="View Patient Questionnaire",
-            width=200,
+            width=330,
+            height=50,
+            font=("Arial", 16),
             fg_color="#73C8AE",
             hover_color="#046A38",
             text_color="white",
             command=lambda: self.view_questionnaire(patient_id, name, surname)
         )
         questionnaire_button.pack(pady=15)
+
+        # Plan a Visit button
+        self.visit_button = ctk.CTkButton(
+            self.actions_frame,
+            text="Plan a Visit",
+            width=330,
+            height=50,
+            font=("Arial", 16),
+            fg_color="#73C8AE",
+            hover_color="#046A38",
+            text_color="white",
+            command=lambda pid=patient_id, n=name, s=surname: self.plan_visit(pid, name, surname)
+        )
+        self.visit_button.pack(pady=15)
+
+        # Check if button should be disabled
+        self.check_visit_button_state(patient_id)
+
+        # Right frame for patient info
+        right_frame = ctk.CTkFrame(content_frame, fg_color="white", corner_radius=10, width=300)
+        right_frame.pack(side="right", fill="y", expand=False, padx=(10, 0))
+        right_frame.pack_propagate(False)  # Prevent the frame from shrinking to fit its contents
+
+        # Patient info header
+        info_header = ctk.CTkFrame(right_frame, fg_color="#73C8AE", corner_radius=10)
+        info_header.pack(fill="x", padx=10, pady=10)
+
+        info_title = ctk.CTkLabel(
+            info_header,
+            text="Patient Information",
+            font=("Arial", 16, "bold"),
+            text_color="white"
+        )
+        info_title.pack(pady=10)
+
+        # Get patient information from database
+        conn = sqlite3.connect("Database_proj.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                SELECT Name, Surname, dateOfBirth, height, weight, age, Gender, 
+                       Nationality, ClinicalHistory, PhoneNumber
+                FROM Patients
+                WHERE PatientID = ?
+            """, (patient_id,))
+            
+            patient_info = cursor.fetchone()
+            
+            if patient_info:
+                # Create scrollable frame for patient info
+                info_canvas = ctk.CTkCanvas(right_frame, bg="white", highlightthickness=0)
+                info_scrollbar = ttk.Scrollbar(right_frame, orient="vertical", command=info_canvas.yview)
+                info_scrollable = ctk.CTkFrame(info_canvas, fg_color="white")
+                
+                info_scrollable.bind(
+                    "<Configure>",
+                    lambda e: info_canvas.configure(scrollregion=info_canvas.bbox("all"))
+                )
+                
+                info_canvas.create_window((0, 0), window=info_scrollable, anchor="nw")
+                info_canvas.configure(yscrollcommand=info_scrollbar.set)
+                
+                info_canvas.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+                info_scrollbar.pack(side="right", fill="y", pady=10)
+                
+                # Display patient information
+                fields = [
+                    ("Name", patient_info[0]),
+                    ("Surname", patient_info[1]),
+                    ("Date of Birth", patient_info[2]),
+                    ("Height", f"{float(patient_info[3]):.2f} m" if patient_info[3] else "N/A"),
+                    ("Weight", f"{patient_info[4]} kg" if patient_info[4] else "N/A"),
+                    ("Age", str(patient_info[5]) if patient_info[5] else "N/A"),
+                    ("Gender", patient_info[6]),
+                    ("Nationality", patient_info[7]),
+                    ("Clinical History", patient_info[8] if patient_info[8] else "N/A"),
+                    ("Phone Number", patient_info[9] if patient_info[9] else "N/A")
+                ]
+                
+                for i, (field, value) in enumerate(fields):
+                    field_frame = ctk.CTkFrame(info_scrollable, fg_color="white")
+                    field_frame.pack(fill="x", padx=10, pady=5)
+                    
+                    field_label = ctk.CTkLabel(
+                        field_frame,
+                        text=f"{field}:",
+                        font=("Arial", 16, "bold"),
+                        text_color="#046A38",
+                        anchor="w"
+                    )
+                    field_label.pack(side="left", padx=10)
+                    
+                    value_label = ctk.CTkLabel(
+                        field_frame,
+                        text=str(value),
+                        font=("Arial", 14),
+                        text_color="#046A38",
+                        anchor="w"
+                    )
+                    value_label.pack(side="left", padx=10)
+                
+        except sqlite3.Error as e:
+            error_label = ctk.CTkLabel(
+                right_frame,
+                text=f"Error loading patient information: {str(e)}",
+                text_color="red"
+            )
+            error_label.pack(pady=20)
+        finally:
+            conn.close()
 
     def check_visit_button_state(self, patient_id):
         conn = sqlite3.connect("Database_proj.db")
@@ -455,7 +668,7 @@ class OSAPatientsView(ctk.CTkFrame):
             label = ctk.CTkLabel(
                 table_frame,
                 text=header,
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
                 fg_color="#73C8AE",
                 corner_radius=5,
@@ -537,7 +750,7 @@ class OSAPatientsView(ctk.CTkFrame):
             therapy_label = ctk.CTkLabel(
                 therapy_frame,
                 text="Current Therapy:",
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="#046A38"
             )
             therapy_label.pack(anchor="w", padx=20, pady=(20, 10))
@@ -547,7 +760,7 @@ class OSAPatientsView(ctk.CTkFrame):
                 therapy_frame,
                 height=100,
                 width=600,
-                font=("Arial", 12)
+                font=("Arial", 14)
             )
             self.therapy_text.pack(padx=20, pady=10)
 
@@ -796,7 +1009,7 @@ class OSAPatientsView(ctk.CTkFrame):
                     scrollable_frame,
                     text="No questionnaire responses found",
                     text_color="#046A38",
-                    font=("Arial", 14)
+                    font=("Arial", 16)
                 )
                 no_data_label.pack(pady=20)
                 return
@@ -835,7 +1048,7 @@ class OSAPatientsView(ctk.CTkFrame):
                         q_label = ctk.CTkLabel(
                             q_frame,
                             text=self.question_text_map.get(key, key),
-                            font=("Arial", 14, "bold"),
+                            font=("Arial", 16, "bold"),
                             text_color="#046A38"
                         )
                         q_label.pack(anchor="w", padx=10, pady=5)
@@ -849,7 +1062,7 @@ class OSAPatientsView(ctk.CTkFrame):
                         answer_label = ctk.CTkLabel(
                             q_frame,
                             text=f"Answer: {decoded_answer}",
-                            font=("Arial", 14),
+                            font=("Arial", 16),
                             text_color="#046A38"
                         )
                         answer_label.pack(anchor="w", padx=20, pady=(0, 5))
@@ -863,7 +1076,6 @@ class OSAPatientsView(ctk.CTkFrame):
             error_label.pack(pady=20)
         finally:
             conn.close()
-
 
 if __name__ == "__main__":
     app = OSAPatientsView(container=None, doctor_id=1)  # oppure un altro id valido

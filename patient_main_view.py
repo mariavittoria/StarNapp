@@ -57,6 +57,7 @@ class PatientMainView(ctk.CTk):
                 self.sidebar_frame, 
                 text=text, 
                 height=40,
+                font=("Arial", 16),
                 command=lambda t=text, c=command: self.select_sidebar_button(t, c),
                 fg_color="transparent",
                 text_color="#046A38",  # Dark green text
@@ -272,7 +273,7 @@ class PatientMainView(ctk.CTk):
         top_frame = ctk.CTkFrame(container, fg_color="transparent")
         top_frame.pack(fill="x", pady=(0, 20))
 
-        title = ctk.CTkLabel(top_frame, text="Welcome to your Patient Portal", font=("Arial", 24, "bold"), text_color="#046A38")
+        title = ctk.CTkLabel(top_frame, text="Welcome to your Patient Portal", font=("Arial", 28, "bold"), text_color="#046A38")
         title.pack(pady=20)
 
         if self.questionnaire_done:
@@ -282,10 +283,12 @@ class PatientMainView(ctk.CTk):
             self.questionnaire_button = ctk.CTkButton(
                 button_frame, 
                 text="✔️ Questionnaire completed", 
-                width=220, 
+                width=250, 
+                height=50,
                 state="disabled", 
                 fg_color="#046A38",
-                text_color="white"
+                text_color="white",
+                font=("Arial", 16)
             )
             self.questionnaire_button.pack(side="left", padx=(0, 5))
 
@@ -372,9 +375,11 @@ class PatientMainView(ctk.CTk):
                 container, 
                 text="Questionnaire", 
                 width=250, 
+                height=50,
                 command=self.open_questionnaire, 
-                fg_color="#73C8AE",  # Light blue-green
-                text_color="white"
+                fg_color="#73C8AE",
+                text_color="white",
+                font=("Arial", 16)
             )
             self.questionnaire_button.pack(pady=15)
 
@@ -382,9 +387,11 @@ class PatientMainView(ctk.CTk):
             container, 
             text="Visits", 
             width=250, 
+            height=50,
             command=self.open_visits, 
-            fg_color="#73C8AE",  # Light blue-green
-            text_color="white"
+            fg_color="#73C8AE",
+            text_color="white",
+            font=("Arial", 16)
         )
         self.visits_button.pack(pady=15)
 
@@ -392,9 +399,11 @@ class PatientMainView(ctk.CTk):
             container, 
             text="Medication", 
             width=250, 
+            height=50,
             command=self.open_medication, 
-            fg_color="#73C8AE",  # Light blue-green
-            text_color="white"
+            fg_color="#73C8AE",
+            text_color="white",
+            font=("Arial", 16)
         )
         self.medication_button.pack(pady=15)
 
@@ -661,7 +670,7 @@ class PatientMainView(ctk.CTk):
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_columnconfigure(1, weight=1)
 
-        title = ctk.CTkLabel(self.main_frame, text="Visits", font=("Arial", 24, "bold"), text_color="#046A38")
+        title = ctk.CTkLabel(self.main_frame, text="Visits", font=("Arial", 28, "bold"), text_color="#046A38")
         title.grid(row=0, column=0, columnspan=2, pady=40)
 
         # Create a frame for buttons to center them
@@ -670,10 +679,10 @@ class PatientMainView(ctk.CTk):
         button_frame.grid_columnconfigure(0, weight=1)
         button_frame.grid_columnconfigure(1, weight=1)
 
-        book_button = ctk.CTkButton(button_frame, text="Book a visit", width=150, fg_color="#046A38", command=self.book_visit)
+        book_button = ctk.CTkButton(button_frame, text="Book a visit", width=250, height=50, fg_color="#046A38", command=self.book_visit,font=("Arial", 16))
         book_button.grid(row=0, column=0, padx=20)
 
-        check_button = ctk.CTkButton(button_frame, text="Check appointments", width=150, fg_color="#046A38", command=self.check_appointment)
+        check_button = ctk.CTkButton(button_frame, text="Check appointments", width=250, height=50, fg_color="#046A38", command=self.check_appointment,font=("Arial", 16))
         check_button.grid(row=0, column=1, padx=20)
 
     def book_visit(self):
@@ -740,7 +749,7 @@ class PatientMainView(ctk.CTk):
             day_label = ctk.CTkLabel(
                 calendar_frame,
                 text=date.strftime("%A\n%d %b"),
-                font=("Arial", 12, "bold"),
+                font=("Arial", 14, "bold"),
                 text_color="#046A38"
             )
             day_label.grid(row=0, column=i, pady=(10, 20), padx=10)
@@ -776,7 +785,7 @@ class PatientMainView(ctk.CTk):
                     doctor_label = ctk.CTkLabel(
                         slot_frame,
                         text=f"Dr. {doctor_name}",
-                        font=("Arial", 10),
+                        font=("Arial", 12),
                         text_color="black"
                     )
                     doctor_label.pack()
@@ -887,7 +896,7 @@ class PatientMainView(ctk.CTk):
         title = ctk.CTkLabel(
             self.main_frame,
             text="Your Appointments",
-            font=("Arial", 20, "bold"),
+            font=("Arial", 24, "bold"),
             text_color="#046A38"
         )
         title.pack(pady=10)
@@ -907,7 +916,7 @@ class PatientMainView(ctk.CTk):
             header_label = ctk.CTkLabel(
                 table_frame,
                 text=header,
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
                 fg_color="#73C8AE",
                 corner_radius=5,
@@ -957,7 +966,7 @@ class PatientMainView(ctk.CTk):
                     date_label = ctk.CTkLabel(
                         table_frame,
                         text=formatted_date,
-                        font=("Arial", 12),
+                        font=("Arial", 14),
                         text_color="#046A38",
                         fg_color=bg_color,
                         anchor="center",
@@ -969,7 +978,7 @@ class PatientMainView(ctk.CTk):
                     time_label = ctk.CTkLabel(
                         table_frame,
                         text=time,
-                        font=("Arial", 12),
+                        font=("Arial", 14),
                         text_color="#046A38",
                         fg_color=bg_color,
                         anchor="center",
@@ -981,7 +990,7 @@ class PatientMainView(ctk.CTk):
                     doctor_label = ctk.CTkLabel(
                         table_frame,
                         text=f"Dr. {doctor}",
-                        font=("Arial", 12),
+                        font=("Arial", 14),
                         text_color="#046A38",
                         fg_color=bg_color,
                         anchor="center",
@@ -1008,7 +1017,7 @@ class PatientMainView(ctk.CTk):
             conn.close()
 
         # Add back button
-        back_button = ctk.CTkButton(self.main_frame, text="Back to Visits", command=self.open_visits)
+        back_button = ctk.CTkButton(self.main_frame, text="Back to Visits", command=self.open_visits,font=("Arial", 16),height=40)
         back_button.pack(pady=20)
 
     def delete_appointment(self, date, time, doctor):
@@ -1070,7 +1079,7 @@ class PatientMainView(ctk.CTk):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-        title = ctk.CTkLabel(self.main_frame, text="Medication Management", font=("Arial", 20, "bold"), text_color="#046A38")
+        title = ctk.CTkLabel(self.main_frame, text="Medication Management", font=("Arial", 24, "bold"), text_color="#046A38")
         title.pack(pady=20)
 
         # Create buttons frame
@@ -1082,7 +1091,9 @@ class PatientMainView(ctk.CTk):
             buttons_frame,
             text="Modify Saved Drugs",
             fg_color="#046A38",
-            width=200,
+            width=330,
+            height=50,
+            font=("Arial", 16),
             command=self.show_drugs_table
         )
         modify_drugs_button.pack(side="left", padx=20)
@@ -1092,7 +1103,9 @@ class PatientMainView(ctk.CTk):
             buttons_frame,
             text="View Therapy",
             fg_color="#046A38",
-            width=200,
+            width=330,
+            height=50,
+            font=("Arial", 16),
             command=self.show_therapy
         )
         view_therapy_button.pack(side="left", padx=20)
@@ -1105,7 +1118,7 @@ class PatientMainView(ctk.CTk):
         title = ctk.CTkLabel(
             self.main_frame,
             text="Your Medications",
-            font=("Arial", 20, "bold"),
+            font=("Arial", 24, "bold"),
             text_color="#046A38"
         )
         title.pack(pady=10)
@@ -1124,7 +1137,7 @@ class PatientMainView(ctk.CTk):
             header_label = ctk.CTkLabel(
                 table_frame,
                 text=header,
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
                 fg_color="#73C8AE",
                 corner_radius=5,
@@ -1157,7 +1170,7 @@ class PatientMainView(ctk.CTk):
                     note_label = ctk.CTkLabel(
                         table_frame,
                         text=note,
-                        font=("Arial", 12),
+                        font=("Arial", 14),
                         text_color="#046A38",
                         fg_color=bg_color,
                         anchor="center",
@@ -1169,7 +1182,7 @@ class PatientMainView(ctk.CTk):
                     start_label = ctk.CTkLabel(
                         table_frame,
                         text=start_date,
-                        font=("Arial", 12),
+                        font=("Arial", 14),
                         text_color="#046A38",
                         fg_color=bg_color,
                         anchor="center",
@@ -1181,7 +1194,7 @@ class PatientMainView(ctk.CTk):
                     end_label = ctk.CTkLabel(
                         table_frame,
                         text=end_date,
-                        font=("Arial", 12),
+                        font=("Arial", 14),
                         text_color="#046A38",
                         fg_color=bg_color,
                         anchor="center",
@@ -1228,6 +1241,8 @@ class PatientMainView(ctk.CTk):
             self.main_frame,
             text="Add New Medication",
             width=200,
+            height=50,
+            font=("Arial", 16),
             fg_color="#046A38",
             text_color="white",
             command=lambda: self.edit_drug(None, "", "", "")
@@ -1235,7 +1250,7 @@ class PatientMainView(ctk.CTk):
         add_button.pack(pady=20)
 
         # Back button
-        back_button = ctk.CTkButton(self.main_frame, text="Back to Medication", command=self.open_medication)
+        back_button = ctk.CTkButton(self.main_frame, text="Back to Medication", command=self.open_medication,font=("Arial", 16),height=40)
         back_button.pack(pady=20)
 
     def edit_drug(self, drug_id, note, start_date, end_date):
@@ -1298,6 +1313,8 @@ class PatientMainView(ctk.CTk):
             buttons_frame,
             text="Back",
             width=120,
+            height=40,
+            font=("Arial", 16),
             command=self.show_drugs_table
         )
         back_button.pack(side="left", padx=10)
@@ -1307,6 +1324,8 @@ class PatientMainView(ctk.CTk):
             buttons_frame,
             text="Save",
             width=120,
+            height=40,
+            font=("Arial", 16),
             fg_color="#046A38",
             command=lambda: self.save_drug(drug_id)
         )
@@ -1410,7 +1429,7 @@ class PatientMainView(ctk.CTk):
         for widget in self.main_frame.winfo_children():
             widget.destroy()
 
-        title = ctk.CTkLabel(self.main_frame, text="Your Therapy", font=("Arial", 20, "bold"), text_color="#046A38")
+        title = ctk.CTkLabel(self.main_frame, text="Your Therapy", font=("Arial", 24, "bold"), text_color="#046A38")
         title.pack(pady=20)
 
         # Create therapy display frame
@@ -1462,7 +1481,7 @@ class PatientMainView(ctk.CTk):
             conn.close()
 
         # Back button
-        back_button = ctk.CTkButton(self.main_frame, text="Back to Medication", command=self.open_medication)
+        back_button = ctk.CTkButton(self.main_frame, text="Back to Medication", command=self.open_medication,font=("Arial", 16),height=40)
         back_button.pack(pady=20)
 
     def get_notification_count(self):

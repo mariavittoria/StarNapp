@@ -64,7 +64,7 @@ class NotificationsView(ctk.CTkFrame):
             header_label = ctk.CTkLabel(
                 self.table_frame,
                 text=header,    
-                font=("Arial", 14, "bold"),
+                font=("Arial", 16, "bold"),
                 text_color="white",
                 wraplength=100,
                 fg_color="#73C8AE",
@@ -148,7 +148,7 @@ class NotificationsView(ctk.CTkFrame):
                 date_label = ctk.CTkLabel(
                     self.table_frame,
                     text=formatted_date,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -160,7 +160,7 @@ class NotificationsView(ctk.CTkFrame):
                 patient_label = ctk.CTkLabel(
                     self.table_frame,
                     text=patient_id,
-                    font=("Arial", 12),
+                    font=("Arial", 14),
 
                     text_color="#046A38",
                     fg_color=bg_color,
@@ -173,7 +173,7 @@ class NotificationsView(ctk.CTkFrame):
                 nota2_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(nota2) if nota2 is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     text_color="#046A38",
                     fg_color=bg_color,
                     anchor="center",
@@ -185,7 +185,7 @@ class NotificationsView(ctk.CTkFrame):
                 q7_label = ctk.CTkLabel(
                     self.table_frame,
                     text=int(q7) if q7 is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     
                     text_color="#046A38",
                     fg_color=bg_color,
@@ -198,7 +198,7 @@ class NotificationsView(ctk.CTkFrame):
                 q9_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(q9) if q9 is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     
                     text_color="#046A38",
                     fg_color=bg_color,
@@ -211,7 +211,7 @@ class NotificationsView(ctk.CTkFrame):
                 q11_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(q11) if q11 is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     
                     text_color="#046A38",
                     fg_color=bg_color,
@@ -224,7 +224,7 @@ class NotificationsView(ctk.CTkFrame):
                 q13_label = ctk.CTkLabel(
                     self.table_frame,
                     text=str(q13) if q13 is not None else "-",
-                    font=("Arial", 12),
+                    font=("Arial", 14),
                     
                     text_color="#046A38",
                     fg_color=bg_color,
