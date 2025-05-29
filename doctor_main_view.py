@@ -13,8 +13,6 @@ class DoctorMainView(ctk.CTk):
         
         self.user_id = user_id
         self.doctor_name = self.get_doctor_name(user_id)
-
-
         self.title("Doctor Main View")
         self.geometry("1200x1000")
 
@@ -60,6 +58,12 @@ class DoctorMainView(ctk.CTk):
             )
             btn.grid(row=i + 1, column=0, padx=10, pady=5, sticky="ew")
             self.sidebar_buttons.append(btn)
+            
+            # Add separator after the first 4 buttons
+            if i == 3:  # After the 4th button
+                separator = ctk.CTkFrame(self.sidebar, height=4, width=100, fg_color="#046A38")
+                separator.grid(row=i + 2, column=0, padx=10, pady=(0,50))
+                #separator.grid_columnconfigure(0, weight=1)  # Center the frame
             
             # Set OSA patients button as selected by default
             if text == "OSA patients":

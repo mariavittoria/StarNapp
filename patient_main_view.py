@@ -48,7 +48,7 @@ class PatientMainView(ctk.CTk):
         # Sidebar buttons
         buttons = [
             ("Home", self.show_home),
-            ("Visual Data", self.show_visual_data),
+            ("Visualize Indexes Trends", self.show_visual_data),
             (f"Notifications ({self.notification_count})", self.show_notifications)
         ]
         self.sidebar_buttons = []  # Store buttons for selection state
@@ -597,25 +597,25 @@ class PatientMainView(ctk.CTk):
         c.execute(sql, tuple(values.values()))
         conn.commit()
 
-        apnea = self.answers.get("Q7")
-        therapy = self.answers.get("Q8")
-        note = self.answers.get("Q11")
+        # apnea = self.answers.get("Q7")
+        # therapy = self.answers.get("Q8")
+        # note = self.answers.get("Q11")
 
-        notify_medico = any([
-            note and note.strip(),
-            apnea and str(apnea).isdigit() and int(apnea) > 1,
-            therapy == "No"
-        ])
+        # notify_medico = any([
+        #     note and note.strip(),
+        #     apnea and str(apnea).isdigit() and int(apnea) > 1,
+        #     therapy == "No"
+        # ])
 
-        if notify_medico:
-            # Create notification for doctor
-            message = "New questionnaire response requires attention"
-            c.execute("""
-                INSERT INTO Notifications (PatientID, PatientName, Type, Message)
-                VALUES (?, ?, 'QUESTIONNAIRE', ?)
-            """, (self.patient_id, self.patient_name, message))
-            conn.commit()
-            self.update_notification_count()
+        # if notify_medico:
+        #     # Create notification for doctor
+        #     message = "New questionnaire response requires attention"
+        #     c.execute("""
+        #         INSERT INTO Notifications (PatientID, PatientName, Type, Message)
+        #         VALUES (?, ?, 'QUESTIONNAIRE', ?)
+        #     """, (self.patient_id, self.patient_name, message))
+        #     conn.commit()
+        #     self.update_notification_count()
 
         if self.answers.get("Q5") == "Yes":
             self.schedule_daily_reminder()
@@ -1511,7 +1511,7 @@ class PatientMainView(ctk.CTk):
         unread_title = ctk.CTkLabel(
             unread_frame,
             text="New Notifications",
-            font=("Arial", 16, "bold"),
+            font=("Arial", 20, "bold"),
             text_color="#046A38"
         )
         unread_title.pack(pady=5)
@@ -1525,7 +1525,7 @@ class PatientMainView(ctk.CTk):
         read_title = ctk.CTkLabel(
             read_frame,
             text="Previous Notifications",
-            font=("Arial", 16, "bold"),
+            font=("Arial", 20, "bold"),
             text_color="#046A38"
         )
         read_title.pack(pady=10)
@@ -1551,7 +1551,7 @@ class PatientMainView(ctk.CTk):
                 no_unread = ctk.CTkLabel(
                     unread_scroll, 
                     text="No new notifications", 
-                    font=("Arial", 14),
+                    font=("Arial", 26),
                     text_color="#046A38"
                 )
                 no_unread.pack(pady=20)
@@ -1573,7 +1573,7 @@ class PatientMainView(ctk.CTk):
                     notification_label = ctk.CTkLabel(
                         notification_frame,
                         text=content,
-                        font=("Arial", 12),
+                        font=("Arial", 16),
                         justify="left",
                         wraplength=600,
                         text_color="#046A38"
@@ -1616,7 +1616,7 @@ class PatientMainView(ctk.CTk):
                     notification_label = ctk.CTkLabel(
                         notification_frame,
                         text=content,
-                        font=("Arial", 14),
+                        font=("Arial", 16),
                         justify="left",
                         wraplength=600,
                         text_color="#046A38"

@@ -1057,13 +1057,13 @@ class OSAPatientsView(ctk.CTkFrame):
                         if key in self.answer_decoding_map:
                             decoded_answer = self.answer_decoding_map[key].get(value, value)
                         else:
-                            decoded_answer = value
+                            decoded_answer = "-"
                             
                         answer_label = ctk.CTkLabel(
                             q_frame,
-                            text=f"Answer: {decoded_answer}",
+                            text=f"{decoded_answer}",
                             font=("Arial", 16),
-                            text_color="#046A38"
+                            text_color="black"
                         )
                         answer_label.pack(anchor="w", padx=20, pady=(0, 5))
                 
