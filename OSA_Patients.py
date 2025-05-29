@@ -557,19 +557,24 @@ class OSAPatientsView(ctk.CTkFrame):
             conn.close()
 
     def plan_visit(self, patient_id, name, surname):
-        from VisitDoctorView import VisitDoctorView
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
         try:
-            # Send notification
-            VisitDoctorView.send_notification_to_patient(patient_id, name, surname)
+            # Create notification for the visit request
+            message = "The doctor requested a visit with you"
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            cursor.execute("""
+                INSERT INTO Notifications (PatientID, PatientName, Type, Message, Timestamp)
+                VALUES (?, ?, ?, ?, ?)
+            """, (patient_id, f"{name} {surname}", "VISIT_REQUEST", message, timestamp))
             
             # Update LastNotificationTime
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute("""
                 INSERT OR REPLACE INTO LastNotificationTime (PatientID, LastNotification)
                 VALUES (?, ?)
-            """, (patient_id, current_time))
+            """, (patient_id, timestamp))
+            
             conn.commit()
             
             # Disable the button
@@ -581,7 +586,7 @@ class OSAPatientsView(ctk.CTkFrame):
 
             # Show success message
             success_label = ctk.CTkLabel(
-                self.actions_frame,
+                self.main_frame,
                 text="Visit notification sent successfully!",
                 font=("Arial", 16),
                 text_color="#046A38"
@@ -601,7 +606,8 @@ class OSAPatientsView(ctk.CTkFrame):
             self.main_frame,
             patient_id=patient_id,
             patient_name=f"{name} {surname}",
-            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname),
+            is_doctor=True
         )
         ahi_view.pack(fill="both", expand=True)
 
@@ -613,7 +619,8 @@ class OSAPatientsView(ctk.CTkFrame):
             self.main_frame,
             patient_id=patient_id,
             patient_name=f"{name} {surname}",
-            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname),
+            is_doctor=True
         )
         odi_view.pack(fill="both", expand=True)
 
@@ -625,7 +632,8 @@ class OSAPatientsView(ctk.CTkFrame):
             self.main_frame,
             patient_id=patient_id,
             patient_name=f"{name} {surname}",
-            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname),
+            is_doctor=True
         )
         spo2_view.pack(fill="both", expand=True)
 
@@ -814,16 +822,37 @@ class OSAPatientsView(ctk.CTkFrame):
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
         try:
+            # Get patient name for notification
+            cursor.execute("SELECT Name, Surname FROM Patients WHERE PatientID = ?", (patient_id,))
+            patient_name = " ".join(cursor.fetchone())
+            
+            # Get old drugs for comparison
+            cursor.execute("SELECT Note FROM Drugs WHERE PatientID = ?", (patient_id,))
+            old_drugs = [row[0] for row in cursor.fetchall()]
+            
+            # Delete old drugs
             cursor.execute("DELETE FROM Drugs WHERE PatientID = ?", (patient_id,))
             
+            # Get new drugs
+            new_drugs = []
             for note_entry, start_entry, end_entry in self.drug_entries:
                 note = note_entry.get()
                 start = start_entry.get()
                 end = end_entry.get()
+                if note.strip():  # Only add non-empty drugs
+                    new_drugs.append(note)
+                    cursor.execute("""
+                        INSERT INTO Drugs (PatientID, Note, StartDate, EndDate)
+                        VALUES (?, ?, ?, ?)
+                    """, (patient_id, note, start, end))
+
+            # Create notification if drugs changed
+            if set(old_drugs) != set(new_drugs):
+                message = "Your medication list has been updated by the doctor. Please check your medication list."
                 cursor.execute("""
-                    INSERT INTO Drugs (PatientID, Note, StartDate, EndDate)
-                    VALUES (?, ?, ?, ?)
-                """, (patient_id, note, start, end))
+                    INSERT INTO Notifications (PatientID, PatientName, Type, Message, Timestamp)
+                    VALUES (?, ?, 'MEDICATION', ?, datetime('now'))
+                """, (patient_id, patient_name, message))
 
             conn.commit()
             success_label = ctk.CTkLabel(
@@ -848,6 +877,19 @@ class OSAPatientsView(ctk.CTkFrame):
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
         try:
+            # Get patient name for notification
+            cursor.execute("SELECT Name, Surname FROM Patients WHERE PatientID = ?", (patient_id,))
+            patient_name = " ".join(cursor.fetchone())
+            
+            # Get old therapy for comparison
+            old_note = None
+            if self.current_therapy_id:
+                cursor.execute("SELECT Note FROM Therapy WHERE ID = ?", (self.current_therapy_id,))
+                result = cursor.fetchone()
+                if result:
+                    old_note = result[0]
+            
+            # Save new therapy
             if self.current_therapy_id:
                 cursor.execute("""
                     UPDATE Therapy SET Note = ? WHERE ID = ?
@@ -856,6 +898,14 @@ class OSAPatientsView(ctk.CTkFrame):
                 cursor.execute("""
                     INSERT INTO Therapy (PatientID, Note) VALUES (?, ?)
                 """, (patient_id, new_note))
+            
+            # Create notification if therapy changed
+            if old_note != new_note:
+                message = "Your therapy has been updated by the doctor. Please check your therapy details."
+                cursor.execute("""
+                    INSERT INTO Notifications (PatientID, PatientName, Type, Message, Timestamp)
+                    VALUES (?, ?, 'MEDICATION', ?, datetime('now'))
+                """, (patient_id, patient_name, message))
             
             conn.commit()
             success_label = ctk.CTkLabel(

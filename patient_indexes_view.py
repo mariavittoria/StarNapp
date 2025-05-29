@@ -112,4 +112,4 @@ class PatientIndexes(ctk.CTkFrame):
         spo2_view.pack(fill="both", expand=True)
 
 if __name__ == "__main__":
-    PatientIndexes(parent=None, patient_id="PAT001", patient_name="Luca Bianchi")
+    PatientIndexes(parent=None)

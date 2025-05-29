@@ -271,10 +271,28 @@ class VisitDoctorView(ctk.CTkFrame):
         cursor = conn.cursor()
         
         try:
+            # Get patient info before deleting
+            cursor.execute("""
+                SELECT patient_id, patient_name
+                FROM Appointments
+                WHERE doctor_id = ? AND date = ? AND time = ?
+            """, (self.doctor_id, date, time))
+            patient_info = cursor.fetchone()
+            
+            # Delete the appointment
             cursor.execute("""
                 DELETE FROM Appointments
                 WHERE doctor_id = ? AND date = ? AND time = ?
             """, (self.doctor_id, date, time))
+            
+            # If there was a patient assigned, send them a notification
+            if patient_info and patient_info[0]:
+                patient_id, patient_name = patient_info
+                message = f"Your appointment on {date} at {time} has been cancelled by the doctor."
+                cursor.execute("""
+                    INSERT INTO Notifications (PatientID, PatientName, Type, Message, Timestamp)
+                    VALUES (?, ?, 'CANCELLATION', ?, datetime('now'))
+                """, (patient_id, patient_name, message))
             
             conn.commit()
             

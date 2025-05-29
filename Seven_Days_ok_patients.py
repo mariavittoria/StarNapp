@@ -422,19 +422,24 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
             conn.close()
 
     def plan_visit(self, patient_id, name, surname):
-        from VisitDoctorView import VisitDoctorView
         conn = sqlite3.connect("Database_proj.db")
         cursor = conn.cursor()
         try:
-            # Send notification
-            VisitDoctorView.send_notification_to_patient(patient_id, name, surname)
+            # Create notification for the visit request
+            message = "The doctor requested a visit with you"
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            cursor.execute("""
+                INSERT INTO Notifications (PatientID, PatientName, Type, Message, Timestamp)
+                VALUES (?, ?, ?, ?, ?)
+            """, (patient_id, f"{name} {surname}", "VISIT_REQUEST", message, timestamp))
             
             # Update LastNotificationTime
-            current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             cursor.execute("""
                 INSERT OR REPLACE INTO LastNotificationTime (PatientID, LastNotification)
                 VALUES (?, ?)
-            """, (patient_id, current_time))
+            """, (patient_id, timestamp))
+            
             conn.commit()
             
             # Disable the button
@@ -466,7 +471,8 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
             self.main_frame,
             patient_id=patient_id,
             patient_name=f"{name} {surname}",
-            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname),
+            is_doctor=True
         )
         ahi_view.pack(fill="both", expand=True)
 
@@ -490,7 +496,8 @@ class Seven_Days_Ok_PatientsView(ctk.CTkFrame):
             self.main_frame,
             patient_id=patient_id,
             patient_name=f"{name} {surname}",
-            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname)
+            go_back_callback=lambda: self.show_main_menu(patient_id, name, surname),
+            is_doctor=True
         )
         spo2_view.pack(fill="both", expand=True)
 

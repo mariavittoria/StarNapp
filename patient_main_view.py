@@ -1503,10 +1503,9 @@ class PatientMainView(ctk.CTk):
         container = ctk.CTkFrame(self.main_frame, fg_color="#E8F5F2")
         container.pack(fill="both", expand=True, padx=20, pady=20)
 
-
         # Create frames for unread and read notifications
         unread_frame = ctk.CTkFrame(container, fg_color="white", corner_radius=10)
-        unread_frame.pack(padx=40, pady=(5, 5), fill="x")  # meno spazio sotto
+        unread_frame.pack(padx=40, pady=(5, 5), fill="x")
 
         unread_title = ctk.CTkLabel(
             unread_frame,
@@ -1537,7 +1536,7 @@ class PatientMainView(ctk.CTk):
         cursor = conn.cursor()
         
         try:
-            # Get unread notifications
+            # Get unread notifications - removed type filtering
             cursor.execute("""
                 SELECT Message, Timestamp, Type
                 FROM Notifications
@@ -1546,6 +1545,7 @@ class PatientMainView(ctk.CTk):
             """, (self.patient_id,))
             
             unread_notifications = cursor.fetchall()
+            print(f"Found {len(unread_notifications)} unread notifications")  # Debug log
             
             if not unread_notifications:
                 no_unread = ctk.CTkLabel(
@@ -1557,6 +1557,7 @@ class PatientMainView(ctk.CTk):
                 no_unread.pack(pady=20)
             else:
                 for message, timestamp, type in unread_notifications:
+                    print(f"Processing unread notification: {message}, {timestamp}, {type}")  # Debug log
                     notification_frame = ctk.CTkFrame(
                         unread_scroll,
                         fg_color="#E8F5F2",
@@ -1564,10 +1565,28 @@ class PatientMainView(ctk.CTk):
                     )
                     notification_frame.pack(fill="x", padx=10, pady=5)
                     
-                    timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                    # Handle both standard and ISO format timestamps
+                    try:
+                        timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        try:
+                            timestamp = datetime.datetime.fromisoformat(timestamp)
+                        except ValueError:
+                            timestamp = datetime.datetime.now()
+                    
                     formatted_time = timestamp.strftime("%d %B %Y, %H:%M")
                     
-                    type_icon = "🔔" if type == "REMINDER" else "📋"
+                    # Map notification types to icons
+                    type_icons = {
+                        "REMINDER": "🔔",
+                        "MEDICATION": "📋",
+                        "regular_parameters": "👨‍⚕️",
+                        "VISIT_REQUEST": "📅",
+                        "CANCELLATION": "❌",
+                        #"QUESTIONNAIRE": "📝"
+                    }
+                    type_icon = type_icons.get(type, "📝")  # Default to 📝 if type not found
+                    
                     content = f"{type_icon} {message}\n{formatted_time}"
                     
                     notification_label = ctk.CTkLabel(
@@ -1580,7 +1599,7 @@ class PatientMainView(ctk.CTk):
                     )
                     notification_label.pack(padx=10, pady=5, anchor="w")
 
-            # Get read notifications
+            # Get read notifications - removed type filtering
             cursor.execute("""
                 SELECT Message, Timestamp, Type
                 FROM Notifications
@@ -1589,6 +1608,7 @@ class PatientMainView(ctk.CTk):
             """, (self.patient_id,))
             
             read_notifications = cursor.fetchall()
+            print(f"Found {len(read_notifications)} read notifications")  # Debug log
             
             if not read_notifications:
                 no_read = ctk.CTkLabel(
@@ -1600,6 +1620,7 @@ class PatientMainView(ctk.CTk):
                 no_read.pack(pady=20)
             else:
                 for message, timestamp, type in read_notifications:
+                    print(f"Processing read notification: {message}, {timestamp}, {type}")  # Debug log
                     notification_frame = ctk.CTkFrame(
                         read_scroll,
                         fg_color="#F5F5F5",
@@ -1607,10 +1628,27 @@ class PatientMainView(ctk.CTk):
                     )
                     notification_frame.pack(fill="x", padx=10, pady=5)
                     
-                    timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                    # Handle both standard and ISO format timestamps
+                    try:
+                        timestamp = datetime.datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        try:
+                            timestamp = datetime.datetime.fromisoformat(timestamp)
+                        except ValueError:
+                            timestamp = datetime.datetime.now()
+                    
                     formatted_time = timestamp.strftime("%d %B %Y, %H:%M")
                     
-                    type_icon = "🔔" if type == "REMINDER" else "📋"
+                    # Use the same type icons mapping
+                    type_icons = {
+                        "REMINDER": "🔔",
+                        "MEDICATION": "💊",
+                        "regular_parameters": "👨‍⚕️",
+                        "VISIT_REQUEST": "📅",
+                        "CANCELLATION": "❌",
+                    }
+                    type_icon = type_icons.get(type, "📝")  # Default to 📝 if type not found
+                    
                     content = f"{type_icon} {message}\n{formatted_time}"
                     
                     notification_label = ctk.CTkLabel(
@@ -1635,6 +1673,7 @@ class PatientMainView(ctk.CTk):
             self.update_notification_count()
             
         except sqlite3.Error as e:
+            print(f"Database error: {str(e)}")  # Debug log
             error_label = ctk.CTkLabel(
                 container, 
                 text=f"Error loading notifications: {str(e)}", 

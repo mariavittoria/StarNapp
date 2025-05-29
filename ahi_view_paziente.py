@@ -1,6 +1,8 @@
 import sqlite3
 import datetime
 import customtkinter as ctk
+import subprocess
+import os
 
 # matplotlib
 import matplotlib
@@ -10,19 +12,52 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 class AHIViewPaziente(ctk.CTkFrame):
-    def __init__(self, parent, patient_id, patient_name, go_back_callback=None):
+    def __init__(self, parent, patient_id, patient_name, go_back_callback=None, is_doctor=False):
         super().__init__(parent)
         self.pack(fill="both", expand=True)
         
         self.patient_id = patient_id
         self.patient_name = patient_name
         self.go_back_callback = go_back_callback
+        self.is_doctor = is_doctor
 
         # Configure the frame with light blue-green background
         self.configure(fg_color="#E8F5F2")
         self.pack(fill="both", expand=True, padx=20, pady=20)
 
         self.show_ahi()
+
+    def open_pdf(self):
+        pdf_path = "AHI_report.pdf"  # Update this path to match your PDF file location
+        if os.path.exists(pdf_path):
+            if os.name == 'nt':  # Windows
+                os.startfile(pdf_path)
+            elif os.name == 'posix':  # macOS and Linux
+                if os.name == 'darwin':  # macOS
+                    subprocess.run(['open', pdf_path])
+                else:  # Linux
+                    subprocess.run(['xdg-open', pdf_path])
+        else:
+            # Show error message if PDF doesn't exist
+            error_window = ctk.CTkToplevel(self)
+            error_window.title("Error")
+            error_window.geometry("300x150")
+            
+            message = ctk.CTkLabel(
+                error_window,
+                text="PDF file not found",
+                font=("Arial", 14),
+                text_color="red"
+            )
+            message.pack(pady=20)
+            
+            ok_button = ctk.CTkButton(
+                error_window,
+                text="OK",
+                command=error_window.destroy,
+                fg_color="#046A38"
+            )
+            ok_button.pack(pady=10)
 
     def show_ahi(self):
         for widget in self.winfo_children():
@@ -135,6 +170,17 @@ class AHIViewPaziente(ctk.CTkFrame):
         fig.tight_layout()
         canvas.draw()
         canvas.get_tk_widget().pack(fill="both", expand=True, padx=20, pady=(0,10))
+
+        # Add PDF button next to the plot only if opened by a doctor
+        if self.is_doctor:
+            pdf_btn = ctk.CTkButton(
+                self,
+                text="Open PDF Report",
+                width=120,
+                fg_color="#046A38",
+                command=self.open_pdf
+            )
+            pdf_btn.pack(pady=10)
 
     def go_back(self):
         if self.go_back_callback:
