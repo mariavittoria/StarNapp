@@ -1,0 +1,36 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww14160\viewh10220\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 il primo file da runnare \'e8 DB_definitivo.py che crea il database (lasciamo anche gi\'e0 il database creato eventualmente)\
+poi bisogna runnare Login, perch\'e8 da l\'ec vengono calcolate e aggiornate ogni giorno le date e le et\'e0 dei pazienti\
+teoricamente dal login tutte le funzioni sono poi implementate e collegate, ma non siamo riusciti a risolvere un piccolo problema\
+ovvero che alcuni bottoni non rispondono correttamente ai comandi.\
+\'e8 meglio quindi utilizzare i file patient_main_view.py e doctor_main_view.py da cui tutto funziona correttamente\
+\
+il file patient_index_view permette di inserire nella cornice i tre bottoni da cui vengono richiamati e visualizzati gli indici definiti\
+nei file ahi/odi/spo2_view_paziente che invece sono quelli che permettono di plottare il trend dei dati delle diverse notti, \
+i dati sono fittizi e implementati solo per alcuni soggetti (nome cognome id pw): \
+\
+- Luca Verdi  	PAT001  password123\
+- Angelo Galli    PAT010  pass333\
+- Davide Rizzi   PAT012  davidr\
+\
+Medico con cui fare il log in: \
+- Mario Rossi	DOC001	password123 \
+\
+i file follow up patients, possible follow up patient, 7 days ok, osa patients permettono di visualizzare la tabella di pazienti\
+corretta e tutte richiamano le stesse funzioni poich\'e8 create in modo simile\
+\
+visitdoctorview \'e8 il file che regola il funzionamento del bottone visits nella sidebar del medico\
+\
+notification_view \'e8 un file che permette di creare la tabella con le risposte che necessitano dell'attenzione del dottore e quindi\
+strettamente legato al bottone nella sidebar 'questionnaire side notes'\
+\
+troverete due immagini identiche del logo, una all'interno di una cartella e l'altra no perch\'e8 il problema che c'era nell'avviare\
+tutto il programma dal login era proprio che non si vede il logo nelle sidebar, e quindi avevamo provato a richiamare il logo sia\
+dalla cartella che non (ma non ha funzionato in nessun caso - e cercando di utilizzare o solo il file nella cartella o solo nel\
+folder esterno smetteva di vedersi anche runnando i singoli file, quindi \'e8 presente due volte)}
