@@ -3,8 +3,6 @@ import datetime
 import customtkinter as ctk
 import subprocess
 import os
-
-# matplotlib
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -165,7 +163,6 @@ class AHIViewPaziente(ctk.CTkFrame):
         for i, v in enumerate(values):
             ax.text(dates[i], v, f'{v:.1f}', ha='center', va='bottom')
 
-        # Create canvas
         canvas = FigureCanvasTkAgg(fig, master=self)
         fig.tight_layout()
         canvas.draw()

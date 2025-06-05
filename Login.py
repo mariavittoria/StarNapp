@@ -18,11 +18,10 @@ class AppProg:
 
         self.root = ctk.CTk()
         self.root.title("StarNapp | Login")
-        self.root.geometry("500x900")  # Increased window size
+        self.root.geometry("500x900")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        # Set dark background
-        self.root.configure(fg_color="#2C5234")  # Forest green background
+        self.root.configure(fg_color="#2C5234")
         
         self.setup_login()
         self.root.mainloop()
@@ -38,9 +37,7 @@ class AppProg:
             self.root.destroy()
 
     def setup_login(self):
-        # Load and display logo first (before the login frame)
         try:
-            # Load the image
             image_path = os.path.join("images", "logo.png")
             logo_image = Image.open(image_path)
             logo_image = logo_image.resize((300, 300), Image.Resampling.LANCZOS)
@@ -50,17 +47,15 @@ class AppProg:
                 size=(200, 200)
             )
             
-            # Create label to display the image in the root window (dark green background)
             logo_label = ctk.CTkLabel(
                 self.root,
                 image=self.logo_photo,
-                text="",  # No text, just the image
-                fg_color="transparent"  # Make the label background transparent
+                text="",
+                fg_color="transparent"
             )
-            logo_label.pack(pady=(30, 0))  # Add padding at the top
+            logo_label.pack(pady=(30, 0))
         except Exception as e:
             print(f"Error loading logo: {e}")
-            # Continue without the logo if there's an error
 
         self.login_frame = ctk.CTkFrame(
             self.root,
@@ -69,7 +64,7 @@ class AppProg:
             corner_radius=15,
             fg_color="#FFFFFF"
         )
-        self.login_frame.pack(pady=(20, 50), padx=50)  # Reduced top padding since logo is above
+        self.login_frame.pack(pady=(20, 50), padx=50)
 
         title = ctk.CTkLabel(
             self.login_frame,
@@ -77,13 +72,13 @@ class AppProg:
             font=("Arial", 32, "bold"),
             text_color="#046A38"
         )
-        title.pack(pady=(40, 40))  # Adjusted padding
+        title.pack(pady=(40, 40))
 
         self.role_option = ctk.CTkOptionMenu(
             self.login_frame,
             values=["Doctor", "Patient"],
-            width=350,  # Increased width
-            height=45,  # Increased height
+            width=350,
+            height=45,
             fg_color="#A8DAB5",
             text_color="#046A38",
             button_color="#046A38",
@@ -91,53 +86,53 @@ class AppProg:
             dropdown_fg_color="#A8DAB5",
             dropdown_text_color="#046A38",
             dropdown_hover_color="#92D6B5",
-            font=("Arial", 14)  # Added font size
+            font=("Arial", 14)
         )
-        self.role_option.set("Doctor")  # Default
-        self.role_option.pack(pady=25)  # Increased padding
+        self.role_option.set("Doctor")
+        self.role_option.pack(pady=25)
 
         self.email_entry = ctk.CTkEntry(
             self.login_frame,
             placeholder_text="ID",
-            width=350,  # Increased width
-            height=45,  # Increased height
+            width=350,
+            height=45,
             fg_color="#A8DAB5",
             text_color="#046A38",
             placeholder_text_color="#046A38",
-            font=("Arial", 14)  # Added font size
+            font=("Arial", 14)
         )
-        self.email_entry.pack(pady=25)  # Increased padding
+        self.email_entry.pack(pady=25)
 
         self.password_entry = ctk.CTkEntry(
             self.login_frame,
             placeholder_text="Password",
             show="*",
-            width=350,  # Increased width
-            height=45,  # Increased height
+            width=350,
+            height=45,
             fg_color="#A8DAB5",
             text_color="#046A38",
             placeholder_text_color="#046A38",
-            font=("Arial", 14)  # Added font size
+            font=("Arial", 14)
         )
-        self.password_entry.pack(pady=25)  # Increased padding
+        self.password_entry.pack(pady=25)
 
         self.login_button = ctk.CTkButton(
             self.login_frame,
             text="Login",
             command=self.login,
-            width=250,  # Increased width
-            height=50,  # Increased height
+            width=250,
+
             fg_color="#046A38",
             text_color="white",
             hover_color="#009639",
-            font=("Arial", 16, "bold")  # Increased font size
+            font=("Arial", 16, "bold")
         )
         self.login_button.pack(pady=40)
 
         self.message_label = ctk.CTkLabel(
             self.login_frame,
             text="",
-            font=("Arial", 14),  # Increased font size
+            font=("Arial", 14),
             text_color="#046A38"
         )
         self.message_label.pack(pady=(10, 0))
@@ -147,7 +142,7 @@ class AppProg:
         password = self.password_entry.get().strip()
         role = self.role_option.get()
 
-        # Update all patients' ages
+        # Update eta pazienti
         self.cursor.execute("SELECT PatientID, dateOfBirth FROM Patients")
         patients = self.cursor.fetchall()
         for pid, dob in patients:
@@ -168,7 +163,7 @@ class AppProg:
                 result = self.cursor.fetchone()
                 
                 if result:
-                    # Update all patients' ages
+                    # Update eta pazienti
                     self.cursor.execute("SELECT PatientID, dateOfBirth FROM Patients")
                     patients = self.cursor.fetchall()
                     for pid, dob in patients:
@@ -204,33 +199,30 @@ class AppProg:
     def go_to_home_doctor(self):
         try:
             from doctor_main_view import DoctorMainView
-            # Create new window before destroying the old one
             doctor_window = DoctorMainView(self.user_id)
-            self.root.withdraw()  # Hide the login window instead of destroying it
+            self.root.withdraw()
             doctor_window.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(doctor_window))
             doctor_window.mainloop()
         except Exception as e:
             self.message_label.configure(text=f"Error loading doctor interface: {str(e)}", text_color="red")
-            self.root.deiconify()  # Show the login window again if there's an error
+            self.root.deiconify()
 
     def go_to_home_patient(self):
         try:
             from patient_main_view import PatientMainView
-            # Create new window before destroying the old one
             patient_window = PatientMainView(self.user_id)
-            self.root.withdraw()  # Hide the login window instead of destroying it
+            self.root.withdraw()
             
-            # Ensure the window is properly configured
-            patient_window.update_idletasks()  # Update the window
-            patient_window.deiconify()  # Make sure it's visible
-            patient_window.lift()  # Bring to front
-            patient_window.focus_force()  # Force focus
+            patient_window.update_idletasks()
+            patient_window.deiconify()
+            patient_window.lift()
+            patient_window.focus_force()
             
             patient_window.protocol("WM_DELETE_WINDOW", lambda: self.on_closing(patient_window))
             patient_window.mainloop()
         except Exception as e:
             self.message_label.configure(text=f"Error loading patient interface: {str(e)}", text_color="red")
-            self.root.deiconify()  # Show the login window again if there's an error
+            self.root.deiconify()
 
     def on_closing(self, window=None):
         if window:

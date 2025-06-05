@@ -11,7 +11,6 @@ class PatientIndexes(ctk.CTkFrame):
         self.patient_id = patient_id
         self.patient_name = patient_name
 
-        # Configure the frame with light blue-green background
         self.configure(fg_color="#E8F5F2")
         self.pack(fill="both", expand=True, padx=20, pady=20)
 
@@ -24,7 +23,6 @@ class PatientIndexes(ctk.CTkFrame):
         title = ctk.CTkLabel(self, text="Select an Index", font=("Arial", 28, "bold"), text_color="#046A38")
         title.pack(pady=30)
 
-        # Create a frame for buttons to center them
         button_frame = ctk.CTkFrame(self, fg_color="transparent")
         button_frame.pack(pady=20)
 
